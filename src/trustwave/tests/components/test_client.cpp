@@ -136,10 +136,10 @@ static void fc(int )
                                "id": ")"
                                     + boost::uuids::to_string(act_id1)
                                     + R"(",
-                               "remote":"192.168.91.222",
+                               "remote":"192.168.140.32",
                                "domain":"WORKGROUP",
                                "username":"administrator",
-                               "password":"Finjan123",
+                               "password":"finjan123",
                                "workstation":"SSS"
                            }
                        }
@@ -208,7 +208,7 @@ static void fc(int )
                           {      
                             "H":
                                 {
-                                    "session_id" : ")"
+                                    "sessio n_id" : ")"
                                             + new_session_id
                                             + R"("
                                 },
