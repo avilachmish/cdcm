@@ -42,7 +42,7 @@ def verify_key_exist(session_item)
 
     if response_key.downcase.include? key_value.downcase
         log.info ("#{self.class.name}::#{__callee__}") {"key was found in text"}
-        ver_result = Verification_Result.new(true, "")
+        ver_result = Verification_Result.new(true, "key was found in text")
         return ver_result
     else
         log.info ("#{self.class.name}::#{__callee__}") {"key was NOT found in text"}
@@ -67,7 +67,7 @@ def compare_result_to_bool(session_item)
 
     if response_key.downcase ==key_value.downcase
         log.info ("#{self.class.name}::#{__callee__}") {"response is as expected"}
-        ver_result = Verification_Result.new(true, "")
+        ver_result = Verification_Result.new(true, "response is as expected: " + key_value.downcase)
         return ver_result
     else
         log.info ("#{self.class.name}::#{__callee__}") {"response val is not as expected"}
@@ -101,7 +101,7 @@ def reg_match(session_item)
         return ver_result
     else
         log.info ("#{self.class.name}::#{__callee__}") {"regex match to the response"}
-        ver_result = Verification_Result.new(true, "")
+        ver_result = Verification_Result.new(true, "regex " + key_value + " match to the response")
         return ver_result
     end
 

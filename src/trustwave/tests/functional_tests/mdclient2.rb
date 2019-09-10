@@ -10,8 +10,14 @@ require './testRunner.rb'
 require './myLogger.rb'
 require 'json'
 
+xml_path = ARGV[0]
+if  xml_path.nil? || xml_path.empty?
+    xml_path="actions.xml"
+    puts "please specify the path of tests xml. currently using default: " + xml_path
+end
+
 runner = Test_Runner.new
-runner.run_test_from_file("actions.xml")
+runner.run_test_from_file(xml_path)
 END {
     puts "closing log file"
    log.close

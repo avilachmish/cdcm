@@ -124,79 +124,63 @@ class Test_Runner
 
         #for each 'session'
         root_element.elements.each("sessions/session") {
-            # extract the asset details
             |xml_session|
             #create Session object
             tmp_session =  Session.new
+            # extract the asset details
             asset_name = xml_session.attributes["asset_name"]
-            #tmp_session.set_asset(@assets_list[asset_name])
             tmp_session.asset_details = @assets_list[asset_name]
 
+            #todo: rotem, think if needed
             session_name = xml_session.attributes["session_name"]
             tmp_session.session_name = session_name
 
             session_description = xml_session.attributes["description"]
             tmp_session.session_description = session_description
 
-            #extract the session_items and add to session
-            xml_session.elements.each("session_item") {
-                |xml_session_item|
-                action_name = xml_session_item.attributes["action"]
-                # get the list of params required for the specific action
-                action_params_names_vec = @actions_list[action_name]
-                # build a vector that hold pair of [param , param_value]
-                action_params = Array.new
-                action_params_names_vec.each {
-                    |param|
-                    param_val = xml_session_item.attributes[param]
-                    param_pair = [param , param_val]
-                    action_params.push(param_pair)
-                }
+            test_set_name =  xml_session.attributes["test_set_name"]
 
-                ver_method = xml_session_item.attributes["verification_method"]
-                # get the list of params required for the specific action
-                vm_params_names_vec = @verification_methods_list[ver_method]
-                # build a vector that hold pair of [param , param_value]
-                verification_params = Array.new
-                vm_params_names_vec.each {
-                    |param|
-                    param_val = xml_session_item.attributes[param]
-                    param_pair = [param , param_val]
-                    verification_params.push(param_pair)
-                }
-                tmp_verification_ctx = Verification_Ctx.new(ver_method, verification_params)
-                tmp_session.add_session_item(action_name, action_params, tmp_verification_ctx)
+            #populate the session items based on the test_set_name
+            root_element.elements.each("test_sets/test_set") {
+                |test_set|
+                current_test_set_name = test_set.attributes["test_set_name"]
+                if current_test_set_name == test_set_name
+                    #extract the session_items and add to session
+                    test_set.elements.each("session_item") {
+                        |xml_session_item|
+                        action_name = xml_session_item.attributes["action"]
+                        # get the list of params required for the specific action
+                        action_params_names_vec = @actions_list[action_name]
+                        # build a vector that hold pair of [param , param_value]
+                        action_params = Array.new
+                        action_params_names_vec.each {
+                            |param|
+                            param_val = xml_session_item.attributes[param]
+                            param_pair = [param , param_val]
+                            action_params.push(param_pair)
+                        }
+
+                        ver_method = xml_session_item.attributes["verification_method"]
+                        # get the list of params required for the specific action
+                        vm_params_names_vec = @verification_methods_list[ver_method]
+                        # build a vector that hold pair of [param , param_value]
+                        verification_params = Array.new
+                        vm_params_names_vec.each {
+                            |param|
+                            param_val = xml_session_item.attributes[param]
+                            param_pair = [param , param_val]
+                            verification_params.push(param_pair)
+                        }
+                        tmp_verification_ctx = Verification_Ctx.new(ver_method, verification_params)
+                        tmp_session.add_session_item(action_name, action_params, tmp_verification_ctx)
+                    }
+                    @sessions.push(tmp_session)
+                    break
+                end
             }
 
-            @sessions.push(tmp_session)
         }
     end
-
-
-=begin
-    ########################################
-    #
-    ########################################
-    def run_test_tryout
-        log.info ("#{self.class.name}::#{__callee__}") {"\n\n\nstart of run_test_tryout"}
-
-        log.info "#{__FILE__} :: #{__LINE__}"
-        log.info ('initialize') { "Initializing..." }
-        log.info ("#{__method__}") { "Initializing..." }
-
-        asset1 = Asset_Details.new("192.168.120.240",  "rfrenkel", "lech_tkawed", "Trustwave", "WORKSTATION1")
-        session1 = Session.new
-        session1.asset_detals = asset1
-        session_item_id = session1.add_session_item("enumerate", "SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion")
-        log.info ("#{self.class.name}::#{__callee__}") {session1.dump}
-
-        @client.add_session(session1)
-        @client.execute_sessions_sequentially
-        log.info ("#{self.class.name}::#{__callee__}") {@client.dump}
-
-        log.info ("#{self.class.name}::#{__callee__}") {"end of run_test_tryout"}
-    end
-=end
 
     ########################################
     # push session to the end of sessions list

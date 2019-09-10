@@ -159,7 +159,10 @@ class MajorDomoClient
 
     log.info ("#{self.class.name}::#{__callee__}") {"will verify results"}
     res = @verifier.verify(session_item)
-    puts session_item.verification_ctx.dump
+
+    short_dump =  short_after_run_dump(session, session_item)
+    puts short_dump
+    #puts session_item.verification_ctx.dump
   end
 
   ########################################
@@ -210,6 +213,13 @@ class MajorDomoClient
       return dump_str
   end
 
+  ########################################
+  #
+  ########################################
+  def short_after_run_dump (session, session_item)
+      dump_str = "result [" + session_item.verification_ctx.vm_result + "] ip [" + session.asset_details.remote + "] action name [" + session_item.action + "] session_id [" + session.session_id + "] reason [" + session_item.verification_ctx.verification_result.vm_result_message + "]\n"
+      return dump_str
+  end
 end # end of class MajorDomoClient
 
 
