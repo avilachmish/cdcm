@@ -18,6 +18,7 @@ class Test_Runner
         @actions_list = Hash.new { | action_name , action_params |}
         @verification_methods_list  = Hash.new { | vm_name , vm_params |}
         @verifier = Verifier.new
+        @response_timeout = nil
     end
 
     ########################################
@@ -109,6 +110,20 @@ class Test_Runner
 
     ########################################
     #
+    ########################################
+    def read_cdcm_client_settings root_element
+        log.info ("#{self.class.name}::#{__callee__}") {"reading cdcm_citent_settings from xml"}
+        root_element.elements.each("cdcm_client_settings") {
+            |cdcm_client_settings|
+            timeout = cdcm_client_settings.attributes["response_timeout"]
+            if timeout !~ /\D/
+                @response_timeout = timeout
+            end
+        }
+    end
+
+    ########################################
+    #
     #
     ########################################
     def load_sessions_from_xml_file(path)
@@ -117,6 +132,13 @@ class Test_Runner
         log.info ("#{self.class.name}::#{__callee__}") {"xml opened: " + path}
 
         root_element = xmldoc.root()
+        read_cdcm_client_settings(root_element)
+        if (! @response_timeout.nil?)
+            @client.set_resp_timeout(@response_timeout)
+        else
+            log.error ("#{self.class.name}::#{__callee__}") {"error reading response timeout. will not set client timeout"}
+        end
+
         # read actions snippet
         read_actions(root_element)
         read_verification_methods(root_element)
