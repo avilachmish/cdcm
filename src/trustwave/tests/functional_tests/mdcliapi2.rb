@@ -24,7 +24,7 @@ end
 
 ###########################################################################
 # Class: MajorDomoClient
-#
+# response_timeout can be set by set_resp_timeout. otherwise, default of 5 sec will be used
 #
 ###########################################################################
 class MajorDomoClient
@@ -42,6 +42,7 @@ class MajorDomoClient
     @client = nil
     @poller = ZMQ::Poller.new
     @timeout = 2500
+    @resp_timeout = 5
     @sessions = Array.new
     @verifier = Verifier.new
     reconnect_to_broker
@@ -58,7 +59,6 @@ class MajorDomoClient
     # Frame 1: "MDPCxy" (six bytes, MDP/Client x.y)
     # Frame 2: Service name (printable string)
     request = ['', MDP::C_CLIENT, service].concat(request)
-
     @client.send_strings request
     nil
   end
@@ -71,12 +71,12 @@ class MajorDomoClient
     if items
       messages = []
       begin
-      Timeout::timeout(5) {
+      Timeout::timeout(@resp_timeout) {
           @client.recv_strings messages
       }
       rescue
-          puts "reached timeout limit when waiting for response. throwing"
-          log.info ("#{self.class.name}::#{__callee__}") {"reached timeout limit when waiting for response. throwing"}
+          puts "reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"
+          log.info ("#{self.class.name}::#{__callee__}") {"reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"}
           raise Timeout::Error
       end
       messages.shift # empty
@@ -217,8 +217,15 @@ class MajorDomoClient
   #
   ########################################
   def short_after_run_dump (session, session_item)
-      dump_str = "result [" + session_item.verification_ctx.vm_result + "] ip [" + session.asset_details.remote + "] action name [" + session_item.action + "] session_id [" + session.session_id + "] reason [" + session_item.verification_ctx.verification_result.vm_result_message + "]\n"
+      dump_str = "result [" + session_item.verification_ctx.vm_result + "] ip [" + session.asset_details.remote + "] action name [" + session_item.action + "] session_name [" + session.session_name + "] req_id [" + session_item.req_id + "] reason [" + session_item.verification_ctx.verification_result.vm_result_message + "]\n"
       return dump_str
+  end
+
+  ########################################
+  #
+  ########################################
+  def set_resp_timeout (timeout)
+      @resp_timeout = timeout
   end
 end # end of class MajorDomoClient
 
