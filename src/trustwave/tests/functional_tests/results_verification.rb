@@ -181,9 +181,9 @@ class  Verification_Ctx
   end
 
   def dump
-      dump_str = "\n==========================\n"
-      dump_str += "Verification_Ctx Dump\n"
-      dump_str += "verification method: " + @vm_name + "\n"
+      #dump_str = "\n==========================\n"
+      #dump_str = "Verification_Ctx Dump\n"
+      dump_str = "verification method: " + @vm_name + "\n"
       dump_str += "expected verification parameters: " + @vm_params.to_s + "\n"
       dump_str += "verification result: " + @verification_result.vm_result.to_s + "\n"
       dump_str += "verification message: " + @verification_result.vm_result_message.to_s + "\n"

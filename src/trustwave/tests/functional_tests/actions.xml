@@ -32,7 +32,7 @@
             <session_item  action="key_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" verification_method="boolean" expected="true" />
             <session_item  action="value_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug" value="Debugger" verification_method="boolean" expected="true" />
             <session_item  action="query_value" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug"  value="Debugger" verification_method="substr_exist" substr="drwtsn32" />
-            <session_item  action="get_remote_file_version" param="ADMIN$/winhlp32.exe"  verification_method="regex_match" regex="^5.2.3790.1830$" />
+            <session_item  action="get_remote_file_version" param="ADMIN$/winhlp32.exe"  verification_method="regex_match" regex="^5\.2\.3790\.1830$" />
             <session_item  action="get_os"  verification_method="substr_exist" substr="CurrentBuild" />
             <session_item  action="close_session" verification_method="substr_exist" substr="session closed" />
         </test_set>

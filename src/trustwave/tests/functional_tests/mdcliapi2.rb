@@ -146,7 +146,7 @@ class MajorDomoClient
   #  send a single action to the broker and wait to the response.
   ########################################
   def execute_session_item(session, session_item)
-    log.info ("#{self.class.name}::#{__callee__}") {"executing session item: \n" + session_item.dump}
+    log.info ("#{self.class.name}::#{__callee__}") {"executing session item: \n" + session_item.dump_before_reply}
     action_str = Message_Formater.instance.action_str(session, session_item)
     log.info ("#{self.class.name}::#{__callee__}") {"sending: \n" + action_str}
     session_item.req_msg = action_str
@@ -225,7 +225,7 @@ class MajorDomoClient
   #
   ########################################
   def set_resp_timeout (timeout)
-      @resp_timeout = timeout
+      @resp_timeout = timeout.to_i
   end
 end # end of class MajorDomoClient
 
@@ -320,6 +320,17 @@ class Session_Item
       dump_str = "\n==============================================\n"
       dump_str += "req_id: " + @req_id + "\naction: " + @action + "\naction_params: " + @action_params.to_s + "\nreq_msg: " + @req_msg + "\nresp_msg: " + @resp_msg
       dump_str += "\nverification context:\n" + @verification_ctx.dump
+      dump_str +="\n==============================================\n"
+
+      return dump_str
+    end
+
+    ########################################
+    # dump the details that relevant before getting reply
+    ########################################
+    def dump_before_reply
+      dump_str = "\n==============================================\n"
+      dump_str += "req_id: " + @req_id + "\naction: " + @action + "\naction_params: " + @action_params.to_s
       dump_str +="\n==============================================\n"
 
       return dump_str

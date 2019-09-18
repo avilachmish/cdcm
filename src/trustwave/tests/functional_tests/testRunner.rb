@@ -58,7 +58,7 @@ class Test_Runner
         #run all sessions
         @client.execute_sessions_sequentially
         sumerize_results
-        log.info ("#{self.class.name}::#{__callee__}") {"=========================Done runing all sesssions. results dump: ========================="}
+        log.info ("#{self.class.name}::#{__callee__}") {"=========================Done running all sessions. results dump: ========================="}
         log.info ("#{self.class.name}::#{__callee__}") {@client.dump}
         log.info ("#{self.class.name}::#{__callee__}") {"end of run_test_from_file"}
     end
@@ -116,7 +116,8 @@ class Test_Runner
         root_element.elements.each("cdcm_client_settings") {
             |cdcm_client_settings|
             timeout = cdcm_client_settings.attributes["response_timeout"]
-            if timeout !~ /\D/
+            #verify timeout value is a number
+            if timeout !~ (/\D/)
                 @response_timeout = timeout
             end
         }
@@ -134,6 +135,7 @@ class Test_Runner
         root_element = xmldoc.root()
         read_cdcm_client_settings(root_element)
         if (! @response_timeout.nil?)
+            log.info ("#{self.class.name}::#{__callee__}") {"setting timeout of: " + @response_timeout.to_s + " seconds"}
             @client.set_resp_timeout(@response_timeout)
         else
             log.error ("#{self.class.name}::#{__callee__}") {"error reading response timeout. will not set client timeout"}
