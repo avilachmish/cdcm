@@ -8,7 +8,7 @@
 # Based on Python example by Min RK
 
 require 'ffi-rzmq'
-require './mdp.rb'
+require 'mdp.rb'
 require 'securerandom'
 #require 'nokogiri'
 require 'rexml/document'
@@ -16,8 +16,8 @@ include REXML
 require 'singleton'
 require "logger"
 require 'timeout'
-require './myLogger.rb'
-require './results_verification.rb'
+require 'myLogger.rb'
+require 'results_verification.rb'
 def log
     MyLogger.instance.log
 end

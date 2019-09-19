@@ -2,7 +2,7 @@
 
 
 require "logger"
-require './myLogger.rb'
+require 'myLogger.rb'
 
 def log
     MyLogger.instance.log

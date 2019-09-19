@@ -4,10 +4,11 @@
 #
 # Author : Tom van Leeuwen <tom@vleeuwen.eu>
 # Based on Python example by Min RK
-
-require './mdcliapi2.rb'
-require './testRunner.rb'
-require './myLogger.rb'
+folder = File.expand_path('.',__dir__)
+$:.unshift(folder) unless $:.include?(folder)
+require 'mdcliapi2.rb'
+require 'testRunner.rb'
+require 'myLogger.rb'
 require 'json'
 
 xml_path = ARGV[0]

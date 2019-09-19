@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require './myLogger.rb'
-require './mdcliapi2'
-require './results_verification.rb'
+require 'myLogger.rb'
+require 'mdcliapi2'
+require 'results_verification.rb'
 
 ###########################################################################
 # Class: Test_Runner
