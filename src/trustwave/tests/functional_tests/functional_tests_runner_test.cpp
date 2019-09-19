@@ -1,6 +1,6 @@
 //=====================================================================================================================
 // Trustwave ltd. @{SRCH}
-//														wt_test.cpp
+//														functional_tests_runner_test.cpp
 //
 //---------------------------------------------------------------------------------------------------------------------
 // DESCRIPTION: 
@@ -8,35 +8,27 @@
 //
 //---------------------------------------------------------------------------------------------------------------------
 // By      : Assaf Cohen
-// Date    : 9/11/19
+// Date    : 9/19/19
 // Comments:
 //=====================================================================================================================
 //                          						Include files
 //=====================================================================================================================
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include "wrapper.hpp"
-using namespace trustwave;
+#include "../components/boost_test_wrapper/wrapper.hpp"
+BOOST_AUTO_TEST_SUITE(Functional)
 
-struct fix1 {
-    fix1():w(ios)  {
-
-    }
-    ~fix1() {  }
-    boost::asio::io_service ios;
-    std::pair<std::future<std::string>,std::future<std::string>> pa=std::make_pair(std::future<std::string>(),std::future<std::string>());
-    wrapper w;
-};
-
-BOOST_FIXTURE_TEST_SUITE(Functional,fix1)
-
-    BOOST_AUTO_TEST_CASE(abc) {
+    BOOST_AUTO_TEST_CASE(standard) {
+        boost::asio::io_service ios;
+        trustwave::wrapper w(ios);
         std::future<std::error_code> e;
-        auto p=w.start_external_test("ls","-la",std::move(pa),std::move(e));
+        auto pa = std::make_pair(std::future<std::string>(),std::future<std::string>());
+        auto p=w.start_external_test("exe_test","./functional_tests/actions.xml",std::move(pa),std::move(e));
         ios.run();
-        std::cout<<pa.first.get();
-        BOOST_TEST(true);
+        auto out = pa.first.get();
+        auto err = pa.second.get();
+
+        std::cout<<out;
+
     }
-
-
 BOOST_AUTO_TEST_SUITE_END()
