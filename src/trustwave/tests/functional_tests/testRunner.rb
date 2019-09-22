@@ -117,7 +117,7 @@ class Test_Runner
             |cdcm_client_settings|
             timeout = cdcm_client_settings.attributes["response_timeout"]
             #verify timeout value is a number
-            if timeout !~ (/\D/)
+            if timeout !~ (/\d/)
                 @response_timeout = timeout
             end
         }
