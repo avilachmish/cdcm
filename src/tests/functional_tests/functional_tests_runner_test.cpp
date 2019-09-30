@@ -56,7 +56,5 @@ BOOST_AUTO_TEST_SUITE(Functional)
                 BOOST_TEST(key_val["result"] == "passed");
             }
         }
-
-
-    }
+}
 BOOST_AUTO_TEST_SUITE_END()
