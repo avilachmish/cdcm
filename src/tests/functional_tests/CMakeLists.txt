@@ -1,0 +1,2 @@
+file(GLOB RB_SRCS RELATIVE . *.rb *.xml exe_test)
+file(COPY ${RB_SRCS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
