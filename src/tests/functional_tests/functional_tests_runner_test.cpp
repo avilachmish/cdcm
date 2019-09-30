@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_SUITE(Functional)
         trustwave::wrapper w(ios);
         std::future<std::error_code> e;
         auto pa = std::make_pair(std::future<std::string>(),std::future<std::string>());
-        auto p=w.start_external_test("exe_test","./functional_tests/actions.xml",std::move(pa),std::move(e));
+        auto p = w.start_external_test("exe_test","./functional_tests/actions.xml",std::move(pa),std::move(e));
         ios.run();
         auto out = pa.first.get();
         auto err = pa.second.get();
