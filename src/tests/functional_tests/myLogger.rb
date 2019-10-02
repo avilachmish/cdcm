@@ -6,7 +6,7 @@ class MyLogger
     include Singleton
     def initialize
         #log_file = File.open('cdcm_client.log', File::WRONLY |  File::CREAT | File::APPEND )
-        log_file = File.open("/var/cdcm/log/cdcm_client#{$client_id}.log", File::WRONLY | File::CREAT | File::TRUNC)
+        log_file = File.open("/Users/mark.richardson/Library/Logs/CDCM/cdcm_client#{$client_id}.log", File::WRONLY | File::CREAT | File::TRUNC)
         log_file.sync = true
         @logger = Logger.new( log_file )
         @logger.datetime_format = '%d--%m-%Y %H:%M:%S '
