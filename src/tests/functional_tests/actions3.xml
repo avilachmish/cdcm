@@ -25,7 +25,7 @@
             <session_item  action="enumerate" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" verification_method="substr_exist" substr="class_name" />
             <session_item  action="key_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" verification_method="boolean" expected="true" />
             <session_item  action="value_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" value="SystemRoot" verification_method="boolean" expected="true" />
-            <session_item  action="get_remote_file_version" param="ADMIN$/System32/ntoskrnl.exe"  verification_method="regex_match" regex="(?!Error.*$)^(.+)$" /> <!--not empty and not error-->
+            <session_item  action="get_remote_file_version" param="ADMIN$/System32/ntoskrnl.exe"  verification_method="regex_match" regex="/6.1.7601.24408/" /> 
 
             <session_item  action="close_session" verification_method="substr_exist" substr="session closed" />
         </test_set>
