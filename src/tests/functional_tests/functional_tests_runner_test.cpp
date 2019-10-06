@@ -19,6 +19,7 @@
 #include <boost/range/iterator_range_io.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 #include "../components/boost_test_wrapper/wrapper.hpp"
 #include <string>
 BOOST_AUTO_TEST_SUITE(Functional)
@@ -33,27 +34,32 @@ BOOST_AUTO_TEST_SUITE(Functional)
         ios.run();
         auto out = pa.first.get();
         auto err = pa.second.get();
-        std::cout<<out;
         std::vector<std::string > cont;
         boost::split(cont, out, boost::is_any_of("\n"));
+        BOOST_TEST_MESSAGE("Ran "<<cont.size()<<" tests");
+        boost::regex re(".*:(.*) .*:(.*) .*:(.*) .*:(.*) .*:(.*) .*:\\[(.*)\\]");
+        const int subs[] = {1};
 
         for (auto line:cont)
         {
             if(boost::starts_with(line, "result")) {
-                std::map<std::string,std::string> key_val;
-                std::vector<std::string > cols;
-                boost::split(cols, line, boost::is_any_of(" "));
-                for(auto col:cols)
+
+                 enum {
+                    result=1,
+                    ip,
+                    action_name,
+                    session_name,
+                    req_id,
+                    reason
+
+                };
+                boost::regex_token_iterator<std::string::iterator> it(line.begin(), line.end(),re,subs );
+                boost::regex_token_iterator<std::string::iterator> end;
+                boost::smatch what;
+                if (boost::regex_search(line, what, re))
                 {
-                    std::cout<<col<<std::endl;
-                    auto sep_it = std::find(std::begin(col),std::end(col),':');
-                    if(sep_it!=std::end(col))
-                    {
-                        key_val.emplace(std::string(std::begin(col),sep_it), std::string (sep_it + 1, std::end(col)));
-                    }
-                    else throw std::runtime_error("cannot parse find Rotem!");
+                    BOOST_TEST(what[result] == "passed","Test: '"<<what[action_name]<<"' of session: '"<<what[session_name]<< "' with reason: '"<<what[reason]<<"'");
                 }
-                BOOST_TEST(key_val["result"] == "passed");
             }
         }
 }
