@@ -44,8 +44,8 @@ class Test_Runner
                 end
             }
         }
-        log.info ("#{self.class.name}::#{__callee__}") {"run " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother [" + num_other.to_s + "]"}
-        puts "===================================\nrun " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother [" + num_other.to_s + "]\n==================================="
+        log.info ("#{self.class.name}::#{__callee__}") {"run " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother\/error [" + num_other.to_s + "]"}
+        puts "===================================\nrun " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother\/error [" + num_other.to_s + "]\n==================================="
 
     end
     ########################################

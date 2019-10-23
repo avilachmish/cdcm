@@ -2,7 +2,7 @@
 
 
 require "logger"
-require 'myLogger.rb'
+require './myLogger.rb'
 
 def log
     MyLogger.instance.log
@@ -140,7 +140,7 @@ class Verifier
                 session_item.verification_ctx.vm_result = "failed"
             end
         when "do_not_verify"
-            session_item.verification_ctx.vm_result = "passed "
+            session_item.verification_ctx.vm_result = "passed"
         else
             log.info ("#{self.class.name}::#{__callee__}") {"ERROR: unknown method used: " + session_item.verification_ctx.vm_name}
             puts "ERROR: unknown method used"
