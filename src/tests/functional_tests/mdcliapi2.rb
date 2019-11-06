@@ -126,6 +126,10 @@ class MajorDomoClient
 
     log.info ("#{self.class.name}::#{__callee__}") {"starting session"}
 
+    if session.session_items[0].action != "start_session"
+        log.error ("#{self.class.name}::#{__callee__}") {"first session_item is not start_session!!! add start_session item as first request for session: " + session.session_name}
+        return
+    end
     start_session_str = Message_Formater.instance.start_session_str(session)
     log.info ("#{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
     session.session_items[0].req_msg = start_session_str
@@ -217,7 +221,7 @@ class MajorDomoClient
   #
   ########################################
   def short_after_run_dump (session, session_item)
-      dump_str = "result:" + session_item.verification_ctx.vm_result + " ip:" + session.asset_details.remote + " action_name:" + session_item.action + " session_name:" + session.session_name + " req_id:" + session_item.req_id + " reason:[" + session_item.verification_ctx.verification_result.vm_result_message + "]\n"
+      dump_str = "result:" + session_item.verification_ctx.vm_result + " ip:" + session.asset_details.remote + " action_name:" + session_item.action + " session_name:" + session.session_name + " req_id:" + session_item.req_id + " reason:" + session_item.verification_ctx.verification_result.vm_result_message + "\n"
       return dump_str
   end
 
@@ -250,8 +254,6 @@ class Session
         @session_name
         @session_description
         @session_items = Array.new
-        #initialize the start_session item
-        @session_items[0] = Session_Item.new("start_session","", nil)
     end
 
     ########################################
