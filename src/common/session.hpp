@@ -59,10 +59,12 @@ public:
         }
         return true;
     }
+
     void remote(const std::string& dest)
     {
         remote_ = dest;
     }
+
     void creds(const std::string& domain, const std::string& username, const std::string& password,
                     const std::string& workstation)
     {
@@ -73,7 +75,7 @@ private:
     boost::uuids::uuid uuid_;
     std::string remote_;
     credentials creds_;
-    std::array <std::shared_ptr <cdcm_client>, 2> clients_;
+    std::array <std::shared_ptr <cdcm_client>, 3> clients_; //rotem: fix to use enum instead of index
 };
 }
 

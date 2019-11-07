@@ -3,3 +3,4 @@ project(cdcm)
 
 add_subdirectory(smb)
 add_subdirectory(registry)
+add_subdirectory(wmi)

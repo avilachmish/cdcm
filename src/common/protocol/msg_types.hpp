@@ -93,6 +93,7 @@ struct reg_action_query_value_msg: public action_msg
     std::string value_;
 
 };
+
 struct reg_action_get_os_msg: public action_msg
 {
     reg_action_get_os_msg() :
@@ -100,6 +101,7 @@ struct reg_action_get_os_msg: public action_msg
     {
     }
 };
+
 struct reg_action_enum_key_msg: public action_msg
 {
     reg_action_enum_key_msg() :
@@ -109,15 +111,17 @@ struct reg_action_enum_key_msg: public action_msg
     std::string key_;
 
 };
-    struct reg_action_value_exists_msg: public action_msg
+
+struct reg_action_value_exists_msg: public action_msg
+{
+    reg_action_value_exists_msg() :
+            action_msg("value_exists")
     {
-        reg_action_value_exists_msg() :
-                action_msg("value_exists")
-        {
-        }
-        std::string key_;
-        std::string value_;
-    };
+    }
+    std::string key_;
+    std::string value_;
+};
+
 struct reg_action_key_exists_msg: public action_msg
 {
     reg_action_key_exists_msg() :
@@ -151,6 +155,19 @@ struct local_close_session_msg: public action_msg
     }
 
 };
+
+struct wmi_action_wql_query_msg: public action_msg
+{
+    wmi_action_wql_query_msg() :
+                    action_msg("wql_query")
+    {
+    }
+
+    std::string wql;
+    std::string wmi_namespace;
+
+};
+
 
 struct single_param_action_msg: public action_msg
 {

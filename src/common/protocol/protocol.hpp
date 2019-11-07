@@ -105,17 +105,26 @@ struct traits<trustwave::local_close_session_msg> : binding::object<binding::inh
 };
 
 template<>
+struct traits<trustwave::wmi_action_wql_query_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
+TAO_JSON_BIND_REQUIRED( "wql", &trustwave::wmi_action_wql_query_msg::wql ),
+TAO_JSON_BIND_REQUIRED( "wmi_namespace", &trustwave::wmi_action_wql_query_msg::wmi_namespace ) >
+{
+    TAO_JSON_DEFAULT_KEY( "wmi" ); //rotem check how it works
+};
+
+template<>
 struct traits<trustwave::reg_action_query_value_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
 TAO_JSON_BIND_REQUIRED( "key", &trustwave::reg_action_query_value_msg::key_ ),
 TAO_JSON_BIND_REQUIRED( "value", &trustwave::reg_action_query_value_msg::value_ ) >
 {
     TAO_JSON_DEFAULT_KEY( "query_value" );
 };
-    template<>
-    struct traits<trustwave::reg_action_get_os_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >>
-    {
-        TAO_JSON_DEFAULT_KEY( "get_os" );
-    };
+
+template<>
+struct traits<trustwave::reg_action_get_os_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >>
+{
+    TAO_JSON_DEFAULT_KEY( "get_os" );
+};
 
 template<>
 struct traits<trustwave::reg_action_enum_key_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
@@ -130,13 +139,16 @@ TAO_JSON_BIND_REQUIRED( "key", &trustwave::reg_action_key_exists_msg::key_ )>
 {
     TAO_JSON_DEFAULT_KEY( "key_exists" );
 };
-    template<>
+
+template<>
 struct traits<trustwave::reg_action_value_exists_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
 TAO_JSON_BIND_REQUIRED( "key", &trustwave::reg_action_value_exists_msg::key_ ),
 TAO_JSON_BIND_REQUIRED( "value", &trustwave::reg_action_value_exists_msg::value_ ) >
 {
     TAO_JSON_DEFAULT_KEY( "value_exists" );
-};}
-}
+};
+
+} //end namespace json
+}//end namespace tao
 
 #endif /* TRUSTWAVE_COMMON_PROTOCOL_PROTOCOL_HPP_ */

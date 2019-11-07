@@ -28,7 +28,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#undef uint_t
+#undef uint_t //rotem TODO: try to delete this line and see if works. it's leftover from samba
 #include "../../common/singleton_runner/authenticated_scan_server.hpp"
 #include "../../common/session.hpp"
 /**@ingroup callback
