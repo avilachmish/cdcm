@@ -3,12 +3,22 @@
 //
 
 #include "wql_action.hpp"
+
+#include <tuple>
+#include <string>
 #include "../../clients/wmi/wmi_client.hpp"
 #include "../../common/session.hpp"
+#include "../../common/protocol/msg_types.hpp"
+#include "../../common/protocol/protocol.hpp"
+#include "../../common/singleton_runner/authenticated_scan_server.hpp"
+
 
 using namespace trustwave;
-
-int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg>action, std::shared_ptr<result_msg> res)
+/********************************************************
+ *
+ *  return value: -1 for error, 0 for success
+ *********************************************************/
+int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
 {
     if (!sess || (sess && sess->id().is_nil())){
         AU_LOG_ERROR("Session not found");
@@ -30,21 +40,32 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
         return -1;
     }
 
+   // using result = std::tuple<bool,WERROR>;
 
-    result r=client->connect(*sess);
-    if (!std::get <0>(r)){
-        AU_LOG_DEBUG("Failed connecting to %s err: ", sess->remote().c_str(),win_errstr(std::get <1>(r)));
-        res->res(std::string("Error: ")+std::string(win_errstr(std::get <1>(r))));
+    auto connect_result = client->connect(*sess, wmi_wql_action->wmi_namespace);
+    if (false == std::get<0>(connect_result) )
+    {
+        AU_LOG_ERROR("failed to connect to the asset");
+        res->res(std::string("Error: ")+std::string("Failed to connect"));
         return -1;
     }
 
-    if (!std::get <0>(c->open_key(keact->key_.c_str()))){
-        AU_LOG_DEBUG("Failed opening  %s", keact->key_.c_str());
-        res->res("False");
+    auto query_result = client->query_remote_asset(wmi_wql_action->wql);
+    if (false == std::get<0>(query_result) )
+    {
+        AU_LOG_ERROR("failed to get wql response. Error: %s", std::get<1>(query_result).c_str());
+        res->res(std::string("Error: ")+std::string(std::get<1>(query_result)));
+        return -1;
     }
-    else{
-        res->res("True");
-    }
+
+    //rotem: take the wql_raw_response, parse and create the json string
+    std::string wql_raw_response = std::get<1>(query_result);
+
+    res->res("temp response not parsed: " + wql_raw_response); //rotem TODO: chane this temp return value
 
     return 0;
 }
+
+
+Dispatcher<Action_Base>::Registrator WQL_Query_Action::m_registrator(new WQL_Query_Action,
+                                                                  authenticated_scan_server::instance().public_dispatcher);

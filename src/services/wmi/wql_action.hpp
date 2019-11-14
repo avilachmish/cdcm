@@ -14,7 +14,7 @@
 namespace trustwave {
 
 class session;
-
+class result_msg;
 class WQL_Query_Action : public Action_Base {
 
     static Dispatcher<Action_Base>::Registrator m_registrator;

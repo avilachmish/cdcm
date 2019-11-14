@@ -97,6 +97,9 @@ add_definitions(-DCMAKE_BUILD_TYPE=Debug)
 link_directories(${DEPS_DIR}/libpe-pev/build)
 link_directories(${SMB_LINKS})
 
+include_directories(${OPENVAS_SMB_INCLUDES})
+link_directories(${OPENVAS_SMB_LINKS})
+
 set(bin_dest "bin")
 set(release_bin_dest "/opt/output/bin")
 set(release_lib_dest "/opt/output/libs")
