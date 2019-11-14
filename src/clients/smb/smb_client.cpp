@@ -16,7 +16,8 @@
 //=====================================================================================================================
 //                          						Include files
 //=====================================================================================================================
-#include "smb_downloader_client.hpp"
+#include "smb_client.hpp"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,7 +29,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#undef uint_t //rotem TODO: try to delete this line and see if works. it's leftover from samba
+#undef uint_t
+
 #include "../../common/singleton_runner/authenticated_scan_server.hpp"
 #include "../../common/session.hpp"
 /**@ingroup callback
