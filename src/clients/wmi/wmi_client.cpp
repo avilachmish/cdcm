@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 #include "wmi/openvas_wmi_interface.h"
-#include <samba/auth/credentials/credentials.c>
+
 #include "credentials.h"
 
 
@@ -49,15 +49,15 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
 
     //rotem: TODO: maybe better to build with stringstream<< instead of append
     //rotem: use cli_credentials from samba or openvas?
-    // rotem: TODO:  anyway, should use the get functions
+    //rotem: TODO:  anyway, should use the get functions
     std::string domain_usr_pass_arg;
-    domain_usr_pass_arg.append(((*credentials.domain))).append("/").append(*credentials.username).append("%").append(*credentials.password);
+    domain_usr_pass_arg.append(((credentials.domain_))).append("/").append(credentials.username_).append("%").append(credentials.password_);
 
     std::string remote_asset_arg;
     remote_asset_arg.append("//").append(session.remote());
 
-    string wmi_namespace_arg;
-    if ( !wmi_namespace || wmi_namespace.empty() ) {
+    std::string wmi_namespace_arg;
+    if (  wmi_namespace.empty() ) {
         wmi_namespace_arg = "root\\cimv2";
     }
     else {
@@ -97,7 +97,7 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(std::string wql_que
     //std::string wql_query = "select * from Win32_LoggedOnUser";
     //std::string wql_query = "select Antecedent from Win32_LoggedOnUser";
 
-    if (!qwl_query)
+    if (wql_query.empty())
     {
         //rotem TODO: log an error
         return std::make_tuple(false, "Error: wql query is empty");

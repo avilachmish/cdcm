@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include <wmi/openvas_wmi_interface.h>
+#include "wmi/openvas_wmi_interface.h"
 //#include <samba/auth/credentials/credentials.c>
 
 #ifdef __cplusplus
