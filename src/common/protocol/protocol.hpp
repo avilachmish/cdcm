@@ -157,6 +157,7 @@ TAO_JSON_BIND_REQUIRED( "value", &trustwave::reg_action_value_exists_msg::value_
     TAO_JSON_DEFAULT_KEY( "value_exists" );
 };
 
+
 } //end namespace json
 }//end namespace tao
 

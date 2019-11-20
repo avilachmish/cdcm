@@ -6,6 +6,8 @@
 
 #include <tuple>
 #include <string>
+#include <boost/tokenizer.hpp>
+
 #include "../../clients/wmi/wmi_client.hpp"
 #include "../../common/session.hpp"
 #include "../../common/protocol/msg_types.hpp"
@@ -14,6 +16,71 @@
 
 
 using namespace trustwave;
+
+std::string wql_resp_to_json(std::string work_str) {
+
+    //remove the wmi prefix on response ("result: ")
+    std::string fixed_response_prefix = "result: ";
+    work_str.erase(0, fixed_response_prefix.size());
+    std::cout << "work_str after removing prefix: \n" << work_str << std::endl;
+
+    boost::char_separator<char> end_of_line_delim("\n");
+    boost::char_separator<char> keys_delim("|");
+
+    std::vector<std::vector<std::string>> tokenized_response; //will hold the parsed response as a table
+
+    boost::tokenizer<boost::char_separator<char>> rows_tokens(work_str, end_of_line_delim);
+    int row_number = 0;
+    for (auto rows_iter = rows_tokens.begin(); rows_iter != rows_tokens.end(); ++rows_iter, ++row_number)
+    {
+        tokenized_response.push_back( std::vector<std::string>() );
+        boost::tokenizer<boost::char_separator<char>> keys_tokens(*rows_iter, keys_delim);
+        for (auto keys_iter = keys_tokens.begin(); keys_iter != keys_tokens.end(); ++keys_iter)
+        {
+            tokenized_response[row_number].push_back(*keys_iter);
+        }
+    }
+
+    std::cout << "vec.rows: " << tokenized_response.size() << std::endl;
+    for (auto row : tokenized_response)
+    {
+        std::cout << "num of elements: " << row.size() << std::endl;
+    }
+
+    for (auto row: tokenized_response)
+    {
+        for (auto column : row)
+        {
+            std::cout << column << " || ";
+        }
+        std::cout << std::endl;
+    }
+
+    tao::json::events::to_value consumer;
+    consumer.begin_array();
+    for (std::vector<std::vector<std::basic_string<char> > >::size_type i = 1; i< tokenized_response.size(); ++i)
+    {
+        consumer.begin_object();
+        for (std::vector<std::basic_string<char> >::size_type j=0; j< tokenized_response[0].size(); ++j )
+        {
+            consumer.key( tokenized_response[0][j] );
+            consumer.string( tokenized_response[i][j]);
+            consumer.member();
+        }
+        consumer.end_object();
+        consumer.element();
+    }
+
+    consumer.end_array();
+
+    const tao::json::value json_value = std::move( consumer.value );
+    std::string json_value_as_str = to_string(json_value,2);
+    std::cout << json_value_as_str  << std::endl;
+
+    return json_value_as_str;
+}
+
+
 /********************************************************
  *
  *  return value: -1 for error, 0 for success
@@ -58,11 +125,11 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
         return -1;
     }
 
-    //rotem: take the wql_raw_response, parse and create the json string
+
     std::string wql_raw_response = std::get<1>(query_result);
-
     res->res("temp response not parsed: " + wql_raw_response); //rotem TODO: chane this temp return value
-
+    std::string wql_resp_json = wql_resp_to_json(wql_raw_response);
+    res->res(wql_resp_json);
     return 0;
 }
 

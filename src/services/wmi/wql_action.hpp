@@ -20,7 +20,7 @@ class WQL_Query_Action : public Action_Base {
     static Dispatcher<Action_Base>::Registrator m_registrator;
 
 public:
-    WQL_Query_Action() : Action_Base("wql_query", "wql_query"){}
+    WQL_Query_Action() : Action_Base("wmi", "wmi"){}
 
     int act(boost::shared_ptr <session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res) override;
 

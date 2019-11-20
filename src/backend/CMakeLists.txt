@@ -16,6 +16,7 @@ target_link_libraries(cdcm_worker
                         tw-registry-actions
                         tw-smb-actions
                         tw-internal-actions
+                        tw-wmi-actions
                         crypto
                         ssl
                         samba-credentials
