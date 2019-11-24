@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 include_directories(../3rdparty ../trustwave)
-link_directories( ${SMB_LINKS} )
+link_directories( ${SMB_LINKS} ${OPENVAS_SMB_LINKS}  /usr/lib64/heimdal)
 set(SOURCE_FILES cdcm_worker_process.cpp message_worker.cpp)
 add_executable(cdcm_worker ${SOURCE_FILES})
 target_link_libraries(cdcm_worker
@@ -10,7 +10,7 @@ target_link_libraries(cdcm_worker
                         boost_log
                         samba-debug-samba4
                         smbclient-raw-samba4
-                        krb5
+                      #  krb5
                         tw-logger
                         tw-common
                         tw-registry-actions
@@ -25,6 +25,25 @@ target_link_libraries(cdcm_worker
                         tw-singleton-runner
                         tw-smb-client
                         tw-registry-client
+                        tw-wmi-client
+        openvas_wmiclient
+        popt
+        libgssapi.a
+        asn1
+        libkrb5.a
+        hcrypto
+        heimbase
+        heimntlm
+        #libhdb.a
+        roken
+        libhcrypto.a
+        dl
+        com_err
+        glib-2.0
+        crypt
+        libhx509.a
+        libwind.a
+        sqlite3
         )
 
 install(TARGETS cdcm_worker RUNTIME DESTINATION bin

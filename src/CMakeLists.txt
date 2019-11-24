@@ -98,6 +98,7 @@ add_definitions(-DCMAKE_BUILD_TYPE=Debug)
 link_directories(${DEPS_DIR}/libpe-pev/build)
 link_directories(${SMB_LINKS})
 
+include(Openvas.cmake)
 include_directories(${OPENVAS_SMB_INCLUDES})
 link_directories(${OPENVAS_SMB_LINKS})
 

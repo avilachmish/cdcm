@@ -19,15 +19,16 @@ using namespace trustwave;
 
 std::string wql_resp_to_json(std::string work_str) {
 
-    //remove the wmi prefix on response ("result: ")
-    std::string fixed_response_prefix = "result: ";
-    work_str.erase(0, fixed_response_prefix.size());
-    std::cout << "work_str after removing prefix: \n" << work_str << std::endl;
-
     boost::char_separator<char> end_of_line_delim("\n");
     boost::char_separator<char> keys_delim("|");
 
-    std::vector<std::vector<std::string>> tokenized_response; //will hold the parsed response as a table
+    //tokenized_response will hold the parsed response as a table
+    // at the first row there will be only the keys names
+    // the rest of the rows will hold only the values of the key, matching by the index:
+    // | x | y |
+    // | 1 | 2 |
+    // means x=1, y=2
+    std::vector<std::vector<std::string>> tokenized_response;
 
     boost::tokenizer<boost::char_separator<char>> rows_tokens(work_str, end_of_line_delim);
     int row_number = 0;
@@ -41,6 +42,7 @@ std::string wql_resp_to_json(std::string work_str) {
         }
     }
 
+    //rotem to delete start
     std::cout << "vec.rows: " << tokenized_response.size() << std::endl;
     for (auto row : tokenized_response)
     {
@@ -55,14 +57,18 @@ std::string wql_resp_to_json(std::string work_str) {
         }
         std::cout << std::endl;
     }
+    //rotem to delete end
 
     tao::json::events::to_value consumer;
     consumer.begin_array();
-    for (std::vector<std::vector<std::basic_string<char> > >::size_type i = 1; i< tokenized_response.size(); ++i)
+    for (std::vector<std::vector<std::basic_string<char>>>::size_type i = 1; i< tokenized_response.size(); ++i)
     {
+        std::cout << "i: " << i << std::endl; //rotem to delete
         consumer.begin_object();
-        for (std::vector<std::basic_string<char> >::size_type j=0; j< tokenized_response[0].size(); ++j )
+        for (std::vector<std::basic_string<char> >::size_type j=0; j< tokenized_response[i].size(); ++j )
         {
+
+            std::cout << j << " inserting pair: " <<  tokenized_response[0][j] << " : "  << tokenized_response[i][j] << std::endl; //rotem to delete
             consumer.key( tokenized_response[0][j] );
             consumer.string( tokenized_response[i][j]);
             consumer.member();
@@ -72,11 +78,9 @@ std::string wql_resp_to_json(std::string work_str) {
     }
 
     consumer.end_array();
-
     const tao::json::value json_value = std::move( consumer.value );
-    std::string json_value_as_str = to_string(json_value,2);
-    std::cout << json_value_as_str  << std::endl;
-
+    std::string json_value_as_str = to_string(json_value,1);
+    std::cout << json_value_as_str  << std::endl; //rotem to delete
     return json_value_as_str;
 }
 
@@ -127,8 +131,9 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
 
 
     std::string wql_raw_response = std::get<1>(query_result);
-    res->res("temp response not parsed: " + wql_raw_response); //rotem TODO: chane this temp return value
+    std::cout << "temp response not parsed: \n" << wql_raw_response << std::endl;
     std::string wql_resp_json = wql_resp_to_json(wql_raw_response);
+
     res->res(wql_resp_json);
     return 0;
 }

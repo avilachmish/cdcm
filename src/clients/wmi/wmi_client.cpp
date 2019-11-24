@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 #include <iostream> //rotem to delete
+#include <memory>
 #include "../../common/session.hpp"
 
 #include "../../common/singleton_runner/authenticated_scan_server.hpp"
@@ -66,7 +67,7 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
 
     std::string host_arg;
     std::vector<std::string> arguments = { "wmic","-U", domain_usr_pass_arg, remote_asset_arg, wmi_namespace_arg};
-   //std::vector<std::string> arguments = { "wmic","-U", "kkkkkkkkk/administrator%finjan123", "//192.168.140.32", "root\\cimv2"};
+    //std::vector<std::string> arguments = { "wmic","-U", "kkkkkkkkk/administrator%finjan123", "//192.168.140.32", "root\\cimv2"};
     std::vector<char*> argv;
     for (const auto& arg : arguments)
         argv.push_back((char*)arg.data());
@@ -83,36 +84,27 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
         return std::make_tuple(false, "Error: Failed to connect");
     }
 
-    std::cout << "connection done" << std::endl; //rotem: todo delete
-
-
-    return std::make_tuple(true, "connection succeeded");
+    return std::make_tuple(true, "connection to asset " +  session.remote() + " succeeded");
 }
 
 std::tuple<bool, std::string> wmi_client::query_remote_asset(std::string wql_query)
 {
-    //std::string wql_query = "select * from Win32_LoggedOnUser";
-    //std::string wql_query = "select * from Win32_Bios";
-    //std::string wql_query = "select name 	from Win32_SystemDriver";
-    //std::string wql_query = "select * from Win32_LoggedOnUser";
-    //std::string wql_query = "select Antecedent from Win32_LoggedOnUser";
-
     if (wql_query.empty())
     {
         //rotem TODO: log an error
         return std::make_tuple(false, "Error: wql query is empty");
     }
     std::string result_string;
-    char* x ;
-    //int ret = wmi_query(handle, wql_query.data(), &x);
-    int ret = wmi_query(wmi_handle, wql_query.data(), &x);
+    char* x ; //rotem: todo : free the allocated memory or use smart potr
+    std::unique_ptr<char *> y;
+    int ret = wmi_query(wmi_handle, wql_query.data(), y.get());
     //rotem: TODO: in case of error i don't have access to this info
     if (-1 == ret)
     {
         //rotem TODO: log an error
-        std::cout << "result: " << x << std::endl;
+        std::cout << "wmi query result with an error: " << *y << std::endl;
         return std::make_tuple(false, "Error: Some wmi error happened");
     }
-    std::cout << "result: " << x << std::endl;
-    return {true, std::string(x)};
+    std::cout << "wmi query result: \n" << *y << std::endl;
+    return {true, std::string(*y)};
 }
