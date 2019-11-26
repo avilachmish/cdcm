@@ -118,7 +118,7 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
     if (false == std::get<0>(connect_result) )
     {
         AU_LOG_ERROR("failed to connect to the asset");
-        res->res(std::string("Error: ")+std::string("Failed to connect"));
+        res->res(std::string("Error: Failed to connect to the asset"));
         return -1;
     }
 
