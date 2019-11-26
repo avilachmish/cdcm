@@ -13,6 +13,7 @@ set(SOURCE_FILES
 		maintenance.cpp)
 add_executable(cdcm_broker ${SOURCE_FILES})
 #target_link_options(cdcm_broker '-Wl,--enable-new-dtags -Wl,-rpath -Wl,/usr/lib64/heimdal -L/usr/lib64/heimdal -lkrb5'	)
+include(../Openvas.cmake)
 
 target_link_libraries(cdcm_broker
 						pthread 
@@ -31,23 +32,7 @@ target_link_libraries(cdcm_broker
 						tw-singleton-runner
 						libpe_pev.a
 						openvas_wmiclient
-		popt
-		libgssapi.a
-		asn1
-		libkrb5.a
-		hcrypto
-		heimbase
-		heimntlm
-		#libhdb.a
-		roken
-		libhcrypto.a
-		dl
-		com_err
-		glib-2.0
-		crypt
-		libhx509.a
-		libwind.a
-		sqlite3
+						${OPENVAS_SMB_LIBS_TO_LINK}
 		)
 install(TARGETS cdcm_broker
 		RUNTIME DESTINATION bin

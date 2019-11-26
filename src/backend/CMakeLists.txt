@@ -4,6 +4,7 @@ include_directories(../3rdparty ../trustwave)
 link_directories( ${SMB_LINKS} ${OPENVAS_SMB_LINKS}  /usr/lib64/heimdal)
 set(SOURCE_FILES cdcm_worker_process.cpp message_worker.cpp)
 add_executable(cdcm_worker ${SOURCE_FILES})
+include(../Openvas.cmake)
 target_link_libraries(cdcm_worker
                         pthread zmq
                         boost_system
@@ -26,24 +27,8 @@ target_link_libraries(cdcm_worker
                         tw-smb-client
                         tw-registry-client
                         tw-wmi-client
-        openvas_wmiclient
-        popt
-        libgssapi.a
-        asn1
-        libkrb5.a
-        hcrypto
-        heimbase
-        heimntlm
-        #libhdb.a
-        roken
-        libhcrypto.a
-        dl
-        com_err
-        glib-2.0
-        crypt
-        libhx509.a
-        libwind.a
-        sqlite3
+                       openvas_wmiclient
+                       ${OPENVAS_SMB_LIBS_TO_LINK}
         )
 
 install(TARGETS cdcm_worker RUNTIME DESTINATION bin
