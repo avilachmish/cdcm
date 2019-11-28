@@ -89,7 +89,7 @@ std::string wql_resp_to_json(std::string work_str) {
  *
  *  return value: -1 for error, 0 for success
  *********************************************************/
-int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
+int WMI_WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
 {
     if (!sess || (sess && sess->id().is_nil())){
         AU_LOG_ERROR("Session not found");
@@ -138,5 +138,5 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
 }
 
 
-Dispatcher<Action_Base>::Registrator WQL_Query_Action::m_registrator(new WQL_Query_Action,
+Dispatcher<Action_Base>::Registrator WMI_WQL_Query_Action::m_registrator(new WMI_WQL_Query_Action,
                                                                   authenticated_scan_server::instance().public_dispatcher);

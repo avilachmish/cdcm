@@ -47,6 +47,7 @@ public:
     {
         map_[t->command()] = std::shared_ptr<T>(t);
     }
+
     T_Ptr find(const std::string &t_name) const
     {
         auto it = map_.find(t_name);

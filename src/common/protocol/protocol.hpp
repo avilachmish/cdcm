@@ -118,7 +118,7 @@ struct traits<trustwave::wmi_action_wql_query_msg> : binding::object<binding::in
 TAO_JSON_BIND_REQUIRED( "wql", &trustwave::wmi_action_wql_query_msg::wql ),
 TAO_JSON_BIND_OPTIONAL( "wmi_namespace", &trustwave::wmi_action_wql_query_msg::wmi_namespace ) >
 {
-    TAO_JSON_DEFAULT_KEY( "wmi" ); //rotem check how it works
+    TAO_JSON_DEFAULT_KEY( "wmi_wql" );
 };
 
 template<>
