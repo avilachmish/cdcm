@@ -22,8 +22,8 @@ std::string wql_resp_to_json(std::string work_str) {
     boost::char_separator<char> end_of_line_delim("\n");
     boost::char_separator<char> keys_delim("|");
 
-    //tokenized_response will hold the parsed response as a table
-    // at the first row there will be only the keys names
+    //tokenized_response will hold the parsed response as a table.
+    // at the first row there will be only the keys names.
     // the rest of the rows will hold only the values of the key, matching by the index:
     // | x | y |
     // | 1 | 2 |
@@ -65,7 +65,6 @@ std::string wql_resp_to_json(std::string work_str) {
     consumer.begin_array();
     for (std::vector<std::vector<std::basic_string<char>>>::size_type i = 1; i< tokenized_response.size(); ++i)
     {
-        //std::cout << "i: " << i << std::endl; //rotem to delete
         consumer.begin_object();
         for (std::vector<std::basic_string<char> >::size_type j=0; j< tokenized_response[i].size(); ++j )
         {
@@ -105,7 +104,7 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
         return -1;
     }
 
-    auto client = std::dynamic_pointer_cast <trustwave::wmi_client>(sess->get_client <trustwave::wmi_client>(2)); //rotem: should use enum
+    auto client = std::dynamic_pointer_cast <trustwave::wmi_client>(sess->get_client <trustwave::wmi_client>(trustwave::cdcm_client_type::WMI_CLIENT));
     if (!client){
         AU_LOG_ERROR("Failed dynamic cast");
         res->res("Error: Failed dynamic cast");
@@ -125,14 +124,13 @@ int WQL_Query_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
     auto query_result = client->query_remote_asset(wmi_wql_action->wql);
     if (false == std::get<0>(query_result) )
     {
-        AU_LOG_ERROR("failed to get wql response. Error: %s", std::get<1>(query_result).c_str());
-        res->res(std::string("Error: ")+std::string(std::get<1>(query_result)));
+        AU_LOG_ERROR("failed to get wql response. %s", std::get<1>(query_result).c_str());
+        res->res(std::string(std::get<1>(query_result)));
         return -1;
     }
 
 
     std::string wql_raw_response = std::get<1>(query_result);
-    //std::cout << "temp response not parsed: \n" << wql_raw_response << std::endl; //rotem to delete
     std::string wql_resp_json = wql_resp_to_json(wql_raw_response);
 
     res->res(wql_resp_json);

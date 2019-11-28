@@ -17,11 +17,10 @@ extern "C" {
 }
 #endif
 
-#include <iostream> //rotem to delete
-#include <memory>
-#include <functional>
-#include "../../common/session.hpp"
+#include <iostream>
+#include <tuple>
 
+#include "../../common/session.hpp"
 #include "../../common/singleton_runner/authenticated_scan_server.hpp"
 #include "../../common/singleton_runner/log_macros.hpp"
 
@@ -29,7 +28,7 @@ using namespace trustwave;
 
 wmi_client::wmi_client()
 {
-
+    wmi_handle = nullptr;
 }
 
 
@@ -42,7 +41,8 @@ wmi_client::~wmi_client()
  *
  * @param session       - reference to the session object
  * @param wmi_namespace - wmi namespace, should be known when connecting to the asset
- * @return              - tuple of bool and result string. if bool is false, an error occurred
+ * @return              - tuple of bool and result string. if bool is false, an error occurred, otherwise the
+ *                        tuple's second will hold the response
  ***********************************************************/
 std::tuple<bool, std::string> wmi_client::connect(const session& session, std::string wmi_namespace)
 {
@@ -57,21 +57,34 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
     std::string wmi_namespace_arg;
     if (  wmi_namespace.empty() ) {
         wmi_namespace_arg = "root\\cimv2";
-        AU_LOG_DEBUG("wmi_namespace wasn't supplied. using default: root\cimv2");
+        AU_LOG_DEBUG("wmi_namespace was not supplied. using default: root\\cimv2");
     }
     else {
         wmi_namespace_arg = wmi_namespace;
     }
 
-    std::string host_arg;
-    std::vector<std::string> arguments = { "wmic","-U", domain_usr_pass_arg, remote_asset_arg, wmi_namespace_arg};
-    //std::vector<std::string> arguments = { "wmic","-U", "kkkkkkkkk/administrator%finjan123", "//192.168.140.32", "root\\cimv2"};
+    //rotem TODO: delete after code review
+/*    std::vector<std::string> arguments = { "wmic","-U", domain_usr_pass_arg, remote_asset_arg, wmi_namespace_arg};
+    //std::vector<std::string> arguments = { "wmic","-U", "kkkkkkkkk/administrator%finjan123", "//192.168.140.32", "root\\cimv2"}; //rotem to delete
+
     std::vector<char*> argv;
     for (const auto& arg : arguments)
         argv.push_back((char*)arg.data());
     argv.push_back(nullptr);
+*/
+    //rotem TODO: how the const stuff is compiling???????
+    //rotem TODO: i'm inserting const char * into char* vector. how it is working????
+    std::vector<char*> argv;
+    argv.push_back((char*)"wmic");
+    argv.push_back((char*)"-U");
+    argv.push_back(domain_usr_pass_arg.data());
+    argv.push_back(remote_asset_arg.data());
+    argv.push_back(wmi_namespace_arg.data());
+    argv.push_back(nullptr);
+
 
     //connect to the asset
+    wmi_handle = nullptr;
     wmi_handle = wmi_connect(argv.size()-1, argv.data());
     if (!wmi_handle)
     {
@@ -91,21 +104,30 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(std::string wql_que
         return std::make_tuple(false, "Error: wql query is empty");
     }
 
-    char* response_raw_ptr;
+    char* response_raw_ptr = nullptr;
     int ret = wmi_query(wmi_handle, wql_query.data(), &response_raw_ptr);
-    std::string response_str(response_raw_ptr);
     //talloc_free(response_raw_ptr);
     //rotem TODO: use unique_ptr to own the resource using a custom deleter
     //rotem TODO: find how i should release response_raw_ptr. when using free i have double release. where the first release came from?
-    // also, maybe need to use talloc_free and not only free. see https://linux.die.net/man/3/talloc
+    // also, use talloc_free and not only free. see https://linux.die.net/man/3/talloc
     //rotem: TODO: in case of error i don't have access to this info
     if (-1 == ret)
     {
-        AU_LOG_DEBUG("wmi query result with an error: %s", response_str.c_str());
-        //std::cout << "wmi query result with an error: " << response_str << std::endl; //rotem to delete
+        AU_LOG_DEBUG("wmi query result with an error");
         return std::make_tuple(false, "Error: Some wmi error happened");
     }
-    //std::cout << "wmi query result: \n" << response_str << std::endl; //rotem to delete
+    std::string response_str(response_raw_ptr);
     AU_LOG_DEBUG("wmi query result: \n%s", response_str.c_str());
     return {true, response_str};
+}
+
+std::tuple<bool, std::string> wmi_client::close_connection()
+{
+    int ret = wmi_close(wmi_handle);
+    if (-1 == ret)
+    {
+        AU_LOG_ERROR("wmi_close returned with an error");
+        return std::make_tuple(false, "Error: wmi_close returned with an error");
+    }
+    return {true, "wmi_close succeeded"};
 }

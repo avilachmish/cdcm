@@ -21,9 +21,18 @@
 #include <string>                          // for string
 #include <array>
 #include <memory>
-
+#include <iostream>
 
 namespace trustwave {
+
+enum cdcm_client_type {
+    REGISTRY_CLIENT,
+    SMB_CLIENT,
+    WMI_CLIENT,
+    NO_CLIENT =3
+};
+
+
 class cdcm_client;
 class session {
 public:
@@ -35,8 +44,18 @@ public:
     const std::string& remote() const;
     credentials creds() const;
 
+//    template<typename T> //rotem to delete after code review
+//    std::shared_ptr <cdcm_client> get_client(size_t c)
+//    {
+//        if (!clients_[c]){
+//            clients_[c].reset(new T);
+//        }
+//        return clients_[c];
+//    }
+
+
     template<typename T>
-    std::shared_ptr <cdcm_client> get_client(size_t c)
+    std::shared_ptr <cdcm_client> get_client(cdcm_client_type c)
     {
         if (!clients_[c]){
             clients_[c].reset(new T);
@@ -74,7 +93,7 @@ private:
     boost::uuids::uuid uuid_;
     std::string remote_;
     credentials creds_;
-    std::array <std::shared_ptr <cdcm_client>, 3> clients_; //rotem: fix to use enum instead of index
+    std::array <std::shared_ptr <cdcm_client>, 3> clients_;
 };
 }
 

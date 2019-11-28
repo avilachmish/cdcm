@@ -10,7 +10,6 @@ extern "C" {
 #endif
 
 #include "wmi/openvas_wmi_interface.h"
-//#include <samba/auth/credentials/credentials.c>
 
 #ifdef __cplusplus
 }
@@ -32,13 +31,9 @@ namespace trustwave {
 
         std::tuple<bool, std::string> connect(const session& session, std::string wmi_namespace);
         std::tuple<bool, std::string> query_remote_asset(std::string wql_query);
-    private:
-        int init();
+        std::tuple<bool, std::string> close_connection();
 
     private:
-        std::string wql_query;
-        char delim='|';
-        std::string wmi_namespace;
         WMI_HANDLE wmi_handle;
     };
 

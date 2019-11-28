@@ -285,7 +285,6 @@ void message_broker::client_process(std::string sender, std::unique_ptr <zmsg> &
     for (auto action_message : recieved_msg.msgs){
         //AU_LOG_DEBUG1("Looking for %s", action_message->name().c_str()); //rotem original line
         AU_LOG_DEBUG("Looking for %s", action_message->name().c_str());
-        AU_LOG_DEBUG("action id: %s", action_message->id().c_str()); //rotem to delete
         auto act1 = trustwave::authenticated_scan_server::instance().public_dispatcher.find(action_message->name());
         if(!act1)
         {
