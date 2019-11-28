@@ -63,17 +63,6 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
         wmi_namespace_arg = wmi_namespace;
     }
 
-    //rotem TODO: delete after code review
-/*    std::vector<std::string> arguments = { "wmic","-U", domain_usr_pass_arg, remote_asset_arg, wmi_namespace_arg};
-    //std::vector<std::string> arguments = { "wmic","-U", "kkkkkkkkk/administrator%finjan123", "//192.168.140.32", "root\\cimv2"}; //rotem to delete
-
-    std::vector<char*> argv;
-    for (const auto& arg : arguments)
-        argv.push_back((char*)arg.data());
-    argv.push_back(nullptr);
-*/
-    //rotem TODO: how the const stuff is compiling???????
-    //rotem TODO: i'm inserting const char * into char* vector. how it is working????
     std::vector<char*> argv;
     argv.push_back((char*)"wmic");
     argv.push_back((char*)"-U");
@@ -81,7 +70,6 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
     argv.push_back(remote_asset_arg.data());
     argv.push_back(wmi_namespace_arg.data());
     argv.push_back(nullptr);
-
 
     //connect to the asset
     wmi_handle = nullptr;
