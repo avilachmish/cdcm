@@ -15,12 +15,12 @@ namespace trustwave {
 
 class session;
 class result_msg;
-class WMI_WQL_Query_Action : public Action_Base {
+class WMI_WQL_Action : public Action_Base {
 
     static Dispatcher<Action_Base>::Registrator m_registrator;
 
 public:
-    WMI_WQL_Query_Action() : Action_Base("wmi_wql", "wmi_wql"){}
+    WMI_WQL_Action() : Action_Base("wmi_wql", "wmi_wql"){}
 
     int act(boost::shared_ptr <session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res) override;
 

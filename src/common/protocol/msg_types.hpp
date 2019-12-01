@@ -159,7 +159,7 @@ struct local_close_session_msg: public action_msg
 struct wmi_action_wql_query_msg: public action_msg
 {
     wmi_action_wql_query_msg() :
-                    action_msg("wmi_wql") //rotem changed from wql_query
+                    action_msg("wmi_wql")
     {
     }
 
