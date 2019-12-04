@@ -2,14 +2,13 @@
 
 #include "mdcliapi2.hpp"
 #include <thread>
-#include <boost/uuid/uuid.hpp>         // streaming operators etc.
+         // streaming operators etc.
 #include <boost/uuid/random_generator.hpp>         // streaming operators etc.
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-#include <functional>
 #include <vector>
 
 #include "../common/protocol/protocol.hpp"
-static void enumf( std::string msg)
+static void enumf( std::string& msg)
 {
     mdcli session("tcp://127.0.0.1:5555", 1);
 
@@ -42,10 +41,10 @@ static void fc(int c)
                                "id": ")"
                                     + boost::uuids::to_string(act_id1)
                                     + R"(",
-                               "remote":"192.168.120.243",
+                               "remote":"192.168.140.32",
                                "domain":"WORKGROUP",
-                               "username":"assaf",
-                               "password":"Finjan123",
+                               "username":"administrator",
+                               "password":"finjan123",
                                "workstation":"SSS"
                            }
                        }
@@ -81,20 +80,23 @@ static void fc(int c)
                 [
    
                     {
-                            "list_dir" :
+                      "read_file"  :
                             {
                                 "id": ")"
                                         + act_id4
                                         + R"(",
-                                "param":"admin$",
-                                "pattern":"*.exe"
+                                "path":"ADMIN$//hh.exe",
+                                "offset":"100",
+                                "size":"100"
+
+
+
                                 
                             }
                     }
                 ]
         })";
         printf("Request is:\n%s\n", actions.c_str());
-
         zmsg *reply = session.send_and_recv(actions);
 
     }
