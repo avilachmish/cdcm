@@ -30,19 +30,21 @@ std::string wql_resp_to_json(std::string work_str) {
     // means x=1, y=2
     std::vector<std::vector<std::string>> tokenized_response;
 
+    // split the response into rows by the '\n' delimiter.
+    // each row, parse by the '|' delimiter
     boost::tokenizer<boost::char_separator<char>> rows_tokens(work_str, end_of_line_delim);
     int row_number = 0;
-    for (auto rows_iter = rows_tokens.begin(); rows_iter != rows_tokens.end(); ++rows_iter, ++row_number)
+    for (auto row : rows_tokens)
     {
         tokenized_response.push_back( std::vector<std::string>() );
-        boost::tokenizer<boost::char_separator<char>> keys_tokens(*rows_iter, keys_delim);
-        for (auto keys_iter = keys_tokens.begin(); keys_iter != keys_tokens.end(); ++keys_iter)
+        boost::tokenizer<boost::char_separator<char>> keys_tokens(row, keys_delim);
+        for (auto key : keys_tokens)
         {
-            tokenized_response[row_number].push_back(*keys_iter);
+            tokenized_response[row_number].push_back(key);
         }
+        ++row_number;
     }
 
-    //rotem to delete start
     /*
     std::cout << "vec.rows: " << tokenized_response.size() << std::endl;
     for (auto row : tokenized_response)
@@ -59,7 +61,7 @@ std::string wql_resp_to_json(std::string work_str) {
         std::cout << std::endl;
     }
      */
-    //rotem to delete end
+
 
     tao::json::events::to_value consumer;
     consumer.begin_array();
@@ -81,7 +83,8 @@ std::string wql_resp_to_json(std::string work_str) {
     const tao::json::value json_value = std::move( consumer.value );
     std::string json_value_as_str = to_string(json_value,1);
     //std::cout << json_value_as_str  << std::endl; //rotem to delete
-    return json_value_as_str;
+
+    return (std::move(to_string(json_value,1)));
 }
 
 
@@ -111,8 +114,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
         return -1;
     }
 
-   // using result = std::tuple<bool,WERROR>;
-
+    //rotem: TODO: think how to distingush between our error and legit error
     auto connect_result = client->connect(*sess, wmi_wql_action->wmi_namespace);
     if (false == std::get<0>(connect_result) )
     {
@@ -124,11 +126,10 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
     auto query_result = client->query_remote_asset(wmi_wql_action->wql);
     if (false == std::get<0>(query_result) )
     {
-        AU_LOG_ERROR("failed to get wql response. %s", std::get<1>(query_result).c_str());
+        AU_LOG_ERROR("failed to get wql response. %s", std::get<1>(query_result).c_str()); //rotem TODO
         res->res(std::string(std::get<1>(query_result)));
         return -1;
     }
-
 
     std::string wql_raw_response = std::get<1>(query_result);
     std::string wql_resp_json = wql_resp_to_json(wql_raw_response);
@@ -138,5 +139,4 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
 }
 
 
-Dispatcher<Action_Base>::Registrator WMI_WQL_Action::m_registrator(new WMI_WQL_Action,
-                                                                   authenticated_scan_server::instance().public_dispatcher);
+Dispatcher<Action_Base>::Registrator WMI_WQL_Action::m_registrator(new WMI_WQL_Action,authenticated_scan_server::instance().public_dispatcher);

@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 
-include_directories(
-        ../trustwave)
+#include_directories(../trustwave) #rotem TODO: can be deleted???
 
 link_directories( ${SMB_LINKS} ${OPENVAS_SMB_LINKS} /usr/lib64/heimdal )
 
@@ -32,8 +31,9 @@ target_link_libraries(cdcm_broker
 						tw-singleton-runner
 						libpe_pev.a
 						openvas_wmiclient
-						${OPENVAS_SMB_LIBS_TO_LINK}
+						${OPENVAS_SMB_LIBS}
 		)
+#rotem TODO: change name to openvas_smb_libs
 install(TARGETS cdcm_broker
 		RUNTIME DESTINATION bin
 		DESTINATION ${bin_dest})

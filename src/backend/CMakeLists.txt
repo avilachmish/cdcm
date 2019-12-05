@@ -28,7 +28,7 @@ target_link_libraries(cdcm_worker
                         tw-registry-client
                         tw-wmi-client
                        openvas_wmiclient
-                       ${OPENVAS_SMB_LIBS_TO_LINK}
+                       ${OPENVAS_SMB_LIBS}
         )
 
 install(TARGETS cdcm_worker RUNTIME DESTINATION bin

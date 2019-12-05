@@ -4,19 +4,6 @@
 
 #include "wmi_client.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "wmi/openvas_wmi_interface.h"
-
-#include "credentials.h"
-
-
-#ifdef __cplusplus
-}
-#endif
-
 #include <iostream>
 #include <tuple>
 
@@ -26,15 +13,10 @@ extern "C" {
 
 using namespace trustwave;
 
-wmi_client::wmi_client()
-{
-    wmi_handle = nullptr;
-}
-
-
 wmi_client::~wmi_client()
 {
-
+    AU_LOG_DEBUG("closing wmi connection to remote asset");
+    close_connection();
 }
 
 /************************************************************
@@ -44,36 +26,36 @@ wmi_client::~wmi_client()
  * @return              - tuple of bool and result string. if bool is false, an error occurred, otherwise the
  *                        tuple's second will hold the response
  ***********************************************************/
-std::tuple<bool, std::string> wmi_client::connect(const session& session, std::string wmi_namespace)
+std::tuple<bool, std::string> wmi_client::connect(const session& session, std::string & wmi_namespace)
 {
     //build the argc,argv
     auto credentials = session.creds();
     std::string domain_usr_pass_arg;
+    constexpr size_t domain_usr_pass_arg_size = 512;
+    domain_usr_pass_arg.reserve(domain_usr_pass_arg_size);
     domain_usr_pass_arg.append(((credentials.domain_))).append("/").append(credentials.username_).append("%").append(credentials.password_);
 
     std::string remote_asset_arg;
+    constexpr size_t remote_asset_arg_size = 256;
+    remote_asset_arg.reserve(remote_asset_arg_size);
     remote_asset_arg.append("//").append(session.remote());
 
-    std::string wmi_namespace_arg;
-    if (  wmi_namespace.empty() ) {
-        wmi_namespace_arg = "root\\cimv2";
-        AU_LOG_DEBUG("wmi_namespace was not supplied. using default: root\\cimv2");
+    std::string wmi_namespace_arg ("root\\cimv2");
+    if (  !wmi_namespace.empty() ) {
+        wmi_namespace_arg = wmi_namespace;
+        AU_LOG_DEBUG("wmi_namespace was supplied:  %s", wmi_namespace.c_str());
     }
     else {
-        wmi_namespace_arg = wmi_namespace;
+        AU_LOG_DEBUG("wmi_namespace was not supplied. using default: root\\cimv2");
     }
 
-    std::vector<char*> argv;
-    argv.push_back((char*)"wmic");
-    argv.push_back((char*)"-U");
-    argv.push_back(domain_usr_pass_arg.data());
-    argv.push_back(remote_asset_arg.data());
-    argv.push_back(wmi_namespace_arg.data());
-    argv.push_back(nullptr);
-
+    std::vector<char*> argv = { std::string("wmic").data(),
+                                std::string("-U").data(),
+                                domain_usr_pass_arg.data(),
+                                remote_asset_arg.data(),
+                                wmi_namespace_arg.data()};
     //connect to the asset
-    wmi_handle = nullptr;
-    wmi_handle = wmi_connect(argv.size()-1, argv.data());
+    wmi_handle = wmi_connect(argv.size(), argv.data());
     if (!wmi_handle)
     {
         AU_LOG_ERROR("Error: Failed to connect to asset %s", session.remote().c_str());
@@ -84,7 +66,8 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
     return std::make_tuple(true, std::string("connection to asset " +  session.remote() + " succeeded"));
 }
 
-std::tuple<bool, std::string> wmi_client::query_remote_asset(std::string wql_query)
+// rotem TODO: see if the response can arrive from outside as std::string
+std::tuple<bool, std::string> wmi_client::query_remote_asset(const std::string & wql_query)
 {
     if (wql_query.empty())
     {
@@ -94,11 +77,8 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(std::string wql_que
 
     char* response_raw_ptr = nullptr;
     int ret = wmi_query(wmi_handle, wql_query.data(), &response_raw_ptr);
-    //talloc_free(response_raw_ptr);
-    //rotem TODO: use unique_ptr to own the resource using a custom deleter
-    //rotem TODO: find how i should release response_raw_ptr. when using free i have double release. where the first release came from?
-    // also, use talloc_free and not only free. see https://linux.die.net/man/3/talloc
-    //rotem: TODO: in case of error i don't have access to this info
+    //rotem,assaf TODO: run with valgrind to discover if the response_raw_ptr is released or i should do that using the talloc_free(response_raw_ptr); ( see https://linux.die.net/man/3/talloc )
+    // NOTE: in case of error i can't get the exact error
     if (-1 == ret)
     {
         AU_LOG_DEBUG("wmi query result with an error");
@@ -106,7 +86,7 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(std::string wql_que
     }
     std::string response_str(response_raw_ptr);
     AU_LOG_DEBUG("wmi query result: \n%s", response_str.c_str());
-    return {true, response_str};
+    return {true, std::move(response_str)};
 }
 
 std::tuple<bool, std::string> wmi_client::close_connection()

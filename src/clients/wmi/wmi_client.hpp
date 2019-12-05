@@ -26,15 +26,15 @@ namespace trustwave {
     class wmi_client :public cdcm_client {
 
     public:
-        wmi_client();
+        wmi_client() = default;
         ~wmi_client();
 
-        std::tuple<bool, std::string> connect(const session& session, std::string wmi_namespace);
-        std::tuple<bool, std::string> query_remote_asset(std::string wql_query);
+        std::tuple<bool, std::string> connect(const session& session, std::string & wmi_namespace);
+        std::tuple<bool, std::string> query_remote_asset(const std::string & wql_query);
         std::tuple<bool, std::string> close_connection();
 
     private:
-        WMI_HANDLE wmi_handle;
+        WMI_HANDLE wmi_handle = nullptr;
     };
 
 

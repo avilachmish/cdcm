@@ -43,17 +43,7 @@ public:
 
     const std::string& remote() const;
     credentials creds() const;
-
-//    template<typename T> //rotem to delete after code review
-//    std::shared_ptr <cdcm_client> get_client(size_t c)
-//    {
-//        if (!clients_[c]){
-//            clients_[c].reset(new T);
-//        }
-//        return clients_[c];
-//    }
-
-
+    
     template<typename T>
     std::shared_ptr <cdcm_client> get_client(cdcm_client_type c)
     {

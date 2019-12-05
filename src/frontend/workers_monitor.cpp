@@ -14,17 +14,21 @@
 namespace bp = boost::process;
 using namespace std;
 using namespace trustwave;
-workers_monitor::workers_monitor(boost::asio::io_service& ios_) :
-ios(ios_),
-num_workers (authenticated_scan_server::instance().settings.worker_processes_), worker_bin_path("cdcm_worker")
+//rotem TODO: remove cout and use logs
+workers_monitor::workers_monitor(boost::asio::io_service& ios_) : ios(ios_),
+                                                                  num_workers (authenticated_scan_server::instance().settings.worker_processes_),
+                                                                  worker_bin_path("cdcm_worker")
 {
 }
 
 workers_monitor::~workers_monitor()
 {
     //std::cerr << "worker monitor destructor" << std::endl;
+    AU_LOG_DEBUG("worker monitor destructor");
+
     for (auto iter = workers_pull.begin(); iter != workers_pull.end() ; ++iter )
     {
+        AU_LOG_DEBUG("about to terminate worker name: %s", iter->first.c_str());
         //std::cerr << "about to terminate worker name: " << iter->first << std::endl;
         iter->second->terminate();
     }
@@ -43,10 +47,12 @@ void workers_monitor::run()
 
 void workers_monitor::monitor(std::string worker_name)
 {
-  //  cout << "in monitor, worker name: " << worker_name << endl;
+    AU_LOG_DEBUG("in monitor, worker name: %s", worker_name.c_str());
+    //  cout << "in monitor, worker name: " << worker_name << endl;
     auto worker_pair = workers_pull.find(worker_name);
     if (  worker_pair  != workers_pull.end() )
     {
+        AU_LOG_DEBUG("worker %s  was found in the map", worker_name.c_str());
       //  cout << "worker " << worker_name << " was found in the map" << std::endl;
         auto worker = start_worker(worker_name);
         if (worker != nullptr ) {
@@ -55,21 +61,25 @@ void workers_monitor::monitor(std::string worker_name)
                 worker_pair->second = std::move(worker);
             }
             catch (std::exception& exception) {
-              //  std::cerr << "got exception: " << exception.what() << endl;
+                AU_LOG_ERROR("got exception while trying to start worker. exception: %s",  exception.what());
+                //  std::cerr << "got exception: " << exception.what() << endl;
             }
         }
         else {
+            AU_LOG_ERROR("worker process cannot be created");
           //  cout << "error: worker process cannot be created" << endl; //ERROR
         }
     }
     else
     {
+        AU_LOG_DEBUG("worker %s  was NOT found in the map", worker_name.c_str());
     //    cout << "worker " << worker_name << " was NOT found in the map" << std::endl;
         auto worker = start_worker(worker_name);
         if (worker != nullptr ) {
             workers_pull.emplace(worker_name,std::move(worker));
         }
         else {
+            AU_LOG_ERROR("worker process cannot be created");
        //     cerr  << "error: worker process cannot be created" << endl; //ERROR
         }
     }
@@ -90,6 +100,7 @@ std::unique_ptr<bp::child> workers_monitor::start_worker(std::string worker_name
     }
     catch (std::exception& exception)
     {
+        AU_LOG_ERROR("got exception while trying to start worker. exception: %s",  exception.what());
        // cout << "got exception: " << exception.what() << endl;
         return nullptr;
     }

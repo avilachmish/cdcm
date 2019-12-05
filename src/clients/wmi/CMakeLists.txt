@@ -6,7 +6,6 @@ include_directories(${OPENVAS_SMB_INCLUDES})
 link_directories(${OPENVAS_SMB_LINKS})
 
 set(SOURCE_FILES wmi_client.cpp)
-set(OPENVAS_INCLUDES /var/openvas-smb/wmi /var/openvas-smb/samba/include)
 
 add_library(tw-wmi-client SHARED ${SOURCE_FILES})
 
