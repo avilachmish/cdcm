@@ -47,7 +47,10 @@ public:
     {
         map_[t->command()] = std::shared_ptr<T>(t);
     }
-
+    void register1(T_Ptr t)
+    {
+        map_[t->command()] = t;
+    }
     T_Ptr find(const std::string &t_name) const
     {
         auto it = map_.find(t_name);
@@ -61,12 +64,12 @@ public:
     {
         Registrator(T *t, Dispatcher & d)
         {
-            std::cerr<<t->name()<<std::endl;
+         //   std::cerr<<t->name()<<std::endl;
             d.register1(t);
         }
         Registrator(T *t, Dispatcher * d)
         {
-            std::cerr<<t->name()<<std::endl;
+            // std::cerr<<t->name()<<std::endl;
             d->register1(t);
         }
     };

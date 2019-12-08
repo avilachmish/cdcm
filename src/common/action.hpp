@@ -31,7 +31,7 @@
 //=====================================================================================================================
 namespace trustwave {
 
-struct session;
+class session;
 struct action_msg;
 struct result_msg;
 class Action_Base: public boost::noncopyable
@@ -64,4 +64,10 @@ private:
     const bool short_job_;
 };
 }
+using import_action_cb_t = std::shared_ptr<trustwave::Action_Base>( );
+
+extern "C" {
+    extern std::shared_ptr<trustwave::Action_Base> import_action();
+}
+
 #endif /* TRUSTWAVE_COMMON_ACTION_HPP_ */

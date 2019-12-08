@@ -14,10 +14,9 @@
 namespace bp = boost::process;
 using namespace std;
 using namespace trustwave;
-//rotem TODO: remove cout and use logs
-workers_monitor::workers_monitor(boost::asio::io_service& ios_) : ios(ios_),
-                                                                  num_workers (authenticated_scan_server::instance().settings.worker_processes_),
-                                                                  worker_bin_path("cdcm_worker")
+workers_monitor::workers_monitor(boost::asio::io_service& ios_) :
+ios(ios_),
+num_workers (authenticated_scan_server::instance().settings.worker_processes_), worker_bin_path("cdcm_worker")
 {
 }
 
