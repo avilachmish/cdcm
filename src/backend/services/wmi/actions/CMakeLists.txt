@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 
-include(../../../Openvas.cmake)
+include(../../Openvas.cmake)
 
 link_directories(${OPENVAS_SMB_LINKS})
 include_directories(${OPENVAS_SMB_INCLUDES})
