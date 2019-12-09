@@ -62,10 +62,8 @@ namespace tao {
                 TAO_JSON_FACTORY_BIND1(trustwave::reg_action_value_exists_msg),
                 TAO_JSON_FACTORY_BIND1(trustwave::reg_action_enum_key_msg),
                 TAO_JSON_FACTORY_BIND1(trustwave::local_start_session_msg),
-                         TAO_JSON_FACTORY_BIND1(trustwave::wmi_action_wql_query_msg) >
-       TAO_JSON_FACTORY_BIND1(trustwave::local_close_session_msg)//,
-                             TAO_JSON_FACTORY_BIND1(trustwave::wmi_action_wql_query_msg) >
-
+                TAO_JSON_FACTORY_BIND1(trustwave::wmi_action_wql_query_msg),
+                TAO_JSON_FACTORY_BIND1(trustwave::local_close_session_msg)
                // TAO_JSON_FACTORY_BIND1(trustwave::get_remote_file_version_msg)
                 > {
         };
@@ -123,6 +121,14 @@ namespace tao {
                 : binding::object<binding::inherit<traits<trustwave::action_msg> >> {
             TAO_JSON_DEFAULT_KEY("close_session");
         };
+
+        template<>
+        struct traits<trustwave::wmi_action_wql_query_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
+                                                     TAO_JSON_BIND_REQUIRED( "wql", &trustwave::wmi_action_wql_query_msg::wql ),
+            TAO_JSON_BIND_OPTIONAL( "wmi_namespace", &trustwave::wmi_action_wql_query_msg::wmi_namespace ) >
+            {
+                TAO_JSON_DEFAULT_KEY( "wmi_wql" );
+            };
 
 
        template<>
