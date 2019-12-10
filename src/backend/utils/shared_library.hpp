@@ -36,7 +36,7 @@ namespace trustwave {
 
         shared_library(const shared_library& rhs) = delete;
 
-        shared_library(const boost::filesystem::path& p):shared_library() {
+        explicit shared_library(const boost::filesystem::path& p):shared_library() {
             open(p);
         }
 
@@ -80,7 +80,6 @@ namespace trustwave {
             if ((ret = dlopen(p.c_str(), RTLD_GLOBAL |
                                                        RTLD_LAZY))) {
                 filename_ = p.generic_string();
-                std::cout << p << std::endl;
                 return ret;
             }
 
