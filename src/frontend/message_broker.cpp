@@ -26,10 +26,13 @@
 #include <boost/asio.hpp>
 using namespace trustwave;
 message_broker::message_broker(zmq::context_t &ctx) :
-                context_(ctx), internal_socket_(new zmq::socket_t(context_, ZMQ_ROUTER)), external_socket_(
-                                new zmq::socket_t(context_, ZMQ_ROUTER)), workers_(
-                                authenticated_scan_server::instance().settings.heartbeat_expiry_), replied_(0)
+                context_(ctx),
+                internal_socket_(new zmq::socket_t(context_, ZMQ_ROUTER)),
+                external_socket_(new zmq::socket_t(context_, ZMQ_ROUTER)),
+                workers_(authenticated_scan_server::instance().settings.heartbeat_expiry_),
+                replied_(0)
 {
+    std::cerr << "in message_broker c'tor" << std::endl; //rotem TODO delete
 }
 
 //  ---------------------------------------------------------------------

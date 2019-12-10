@@ -7,9 +7,9 @@
 #include <iostream>
 #include <tuple>
 
-#include "../../common/session.hpp"
-#include "../../common/singleton_runner/authenticated_scan_server.hpp"
-#include "../../common/singleton_runner/log_macros.hpp"
+#include "../../../common/session.hpp"
+#include "../../../common/singleton_runner/authenticated_scan_server.hpp"
+#include "../../../common/singleton_runner/log_macros.hpp"
 
 using namespace trustwave;
 

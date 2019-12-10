@@ -8,7 +8,7 @@
 #include <string>
 #include <boost/tokenizer.hpp>
 
-#include "../../clients/wmi/wmi_client.hpp"
+#include "../wmi_client.hpp"
 #include "../../../../common/session.hpp"
 #include "../../../../common/protocol/msg_types.hpp"
 #include "../../../../common/protocol/protocol.hpp"
@@ -137,6 +137,3 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
     res->res(wql_resp_json);
     return 0;
 }
-
-
-Dispatcher<Action_Base>::Registrator WMI_WQL_Action::m_registrator(new WMI_WQL_Action,authenticated_scan_server::instance().public_dispatcher);

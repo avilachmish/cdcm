@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
-include(../../samba.cmake)
+#include(../../samba.cmake) #rotem TODO check if can be removed
 
 link_directories(${SMB_LINKS})
 include_directories(${SMB_INCLUDES})

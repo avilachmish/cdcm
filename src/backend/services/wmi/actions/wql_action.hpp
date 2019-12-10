@@ -17,8 +17,6 @@ class session;
 class result_msg;
 class WMI_WQL_Action : public Action_Base {
 
-    static Dispatcher<Action_Base>::Registrator m_registrator;
-
 public:
     WMI_WQL_Action() : Action_Base("wmi_wql", "wmi_wql"){}
 

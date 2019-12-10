@@ -101,6 +101,7 @@ namespace tao {
                 binding::inherit<traits<trustwave::single_param_action_msg> > > {
             TAO_JSON_DEFAULT_KEY("file_exists");
         };
+
         template<>
         struct traits<trustwave::smb_list_dir_msg> : binding::object<
                 binding::inherit<traits<trustwave::single_param_action_msg> >,

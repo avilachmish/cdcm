@@ -17,7 +17,7 @@ extern "C" {
 
 #include <string>
 #include <tuple>
-#include "../../common/client.hpp"
+#include "../../../common/client.hpp"
 
 namespace trustwave {
 
