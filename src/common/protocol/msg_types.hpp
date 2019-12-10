@@ -77,8 +77,7 @@ struct action_msg
     const std::string name_;
 
 protected:
-    explicit action_msg(std::string  name) :
-                    name_(std::move(name))
+    explicit action_msg(std::string  name) : name_(std::move(name))
     {
     }
 
@@ -86,43 +85,42 @@ protected:
 
 struct reg_action_query_value_msg: public action_msg
 {
-    reg_action_query_value_msg() :
-                    action_msg("query_value")
+    reg_action_query_value_msg() : action_msg("query_value")
     {
     }
     std::string key_;
     std::string value_;
 
 };
+
 struct reg_action_get_os_msg: public action_msg
 {
-    reg_action_get_os_msg() :
-            action_msg("get_os")
+    reg_action_get_os_msg() : action_msg("get_os")
     {
     }
 };
+
 struct reg_action_enum_key_msg: public action_msg
 {
-    reg_action_enum_key_msg() :
-                    action_msg("enumerate")
+    reg_action_enum_key_msg() : action_msg("enumerate")
     {
     }
     std::string key_;
 
 };
-    struct reg_action_value_exists_msg: public action_msg
+
+struct reg_action_value_exists_msg: public action_msg
+{
+    reg_action_value_exists_msg() : action_msg("value_exists")
     {
-        reg_action_value_exists_msg() :
-                action_msg("value_exists")
-        {
-        }
-        std::string key_;
-        std::string value_;
-    };
+    }
+    std::string key_;
+    std::string value_;
+};
+
 struct reg_action_key_exists_msg: public action_msg
 {
-    reg_action_key_exists_msg() :
-                    action_msg("key_exists")
+    reg_action_key_exists_msg() : action_msg("key_exists")
     {
     }
     std::string key_;
@@ -132,8 +130,7 @@ struct reg_action_key_exists_msg: public action_msg
 struct local_start_session_msg: public action_msg
 {
 
-    local_start_session_msg() :
-                    action_msg("start_session")
+    local_start_session_msg() : action_msg("start_session")
     {
     }
     std::string remote;
@@ -146,8 +143,7 @@ struct local_start_session_msg: public action_msg
 struct local_close_session_msg: public action_msg
 {
 
-    local_close_session_msg() :
-                    action_msg("close_session")
+    local_close_session_msg() : action_msg("close_session")
     {
     }
 
@@ -155,8 +151,7 @@ struct local_close_session_msg: public action_msg
 
 struct wmi_action_wql_query_msg: public action_msg
 {
-    wmi_action_wql_query_msg() :
-                    action_msg("wmi_wql")
+    wmi_action_wql_query_msg() : action_msg("wmi_wql")
     {
     }
 
@@ -170,12 +165,11 @@ struct single_param_action_msg: public action_msg
 {
 protected:
     single_param_action_msg() = delete;
-    explicit single_param_action_msg(const std::string& name) :
-                    action_msg(name)
+    explicit single_param_action_msg(const std::string& name) : action_msg(name)
     {
     }
-    single_param_action_msg(const single_param_action_msg& o, const std::string& name) :
-                    action_msg(name)
+
+    single_param_action_msg(const single_param_action_msg& o, const std::string& name) : action_msg(name)
     {
         id_ = o.id_;
         param = o.param;
@@ -183,30 +177,31 @@ protected:
 public:
     std::string param;
 };
+
 struct smb_get_file_info_msg: public single_param_action_msg
-    {
+{
 
-        smb_get_file_info_msg() :
-                single_param_action_msg("get_file_info")
+        smb_get_file_info_msg() : single_param_action_msg("get_file_info")
         {
         }
-        explicit smb_get_file_info_msg(const single_param_action_msg& o) :
-                single_param_action_msg(o, "get_file_info")
-        {
-        }
-    };
-    struct smb_file_exists_msg: public single_param_action_msg
-    {
 
-        smb_file_exists_msg() :
-                single_param_action_msg("file_exists")
+        explicit smb_get_file_info_msg(const single_param_action_msg& o) : single_param_action_msg(o, "get_file_info")
         {
         }
-        explicit smb_file_exists_msg(const single_param_action_msg& o) :
-                single_param_action_msg(o, "file_exists")
-        {
-        }
-    };
+};
+
+struct smb_file_exists_msg: public single_param_action_msg
+{
+
+    smb_file_exists_msg() : single_param_action_msg("file_exists")
+    {
+    }
+
+    explicit smb_file_exists_msg(const single_param_action_msg& o) : single_param_action_msg(o, "file_exists")
+    {
+    }
+};
+
 /*
 struct smb_get_file_msg: public single_param_action_msg
 {
@@ -221,19 +216,20 @@ struct smb_get_file_msg: public single_param_action_msg
     }
 };
 */
+
 struct smb_list_dir_msg: public single_param_action_msg
 {
 
-    smb_list_dir_msg() :
-            single_param_action_msg("list_dir")
+    smb_list_dir_msg() : single_param_action_msg("list_dir")
     {
     }
-    explicit smb_list_dir_msg(const single_param_action_msg& o) :
-            single_param_action_msg(o, "list_dir")
+
+    explicit smb_list_dir_msg(const single_param_action_msg& o) : single_param_action_msg(o, "list_dir")
     {
     }
     std::string pattern;
 };
+
 /*
 struct get_remote_file_version_msg: public single_param_action_msg
 {
@@ -261,21 +257,22 @@ struct local_get_file_version_msg: public single_param_action_msg
     }
 };
 */
+
 struct smb_read_file_msg: public action_msg
-    {
-        smb_read_file_msg() :
-                action_msg("read_file")
+{
+        smb_read_file_msg() : action_msg("read_file")
         {
         }
         std::string path_;
         std::string size_;
         std::string offset_;
-    };
+};
 
 struct header
 {
     std::string session_id;
 };
+
 struct msg
 {
     header hdr;
@@ -299,6 +296,7 @@ struct res_msg
     res_msg& operator=(res_msg&&) = default;
     res_msg() = default;
 };
+
 }
 
 #endif /* TRUSTWAVE_COMMON_PROTOCOL_MSG_TYPES_HPP_ */

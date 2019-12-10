@@ -23,29 +23,34 @@ namespace tao {
     namespace json {
 
         template<>
-        struct traits<trustwave::header> : binding::object<
-                TAO_JSON_BIND_REQUIRED ("session_id", &trustwave::header::session_id) > {
+        struct traits<trustwave::header> :
+                binding::object<TAO_JSON_BIND_REQUIRED ("session_id", &trustwave::header::session_id) > {
         };
 
         template<>
-        struct traits<trustwave::msg> : binding::object<TAO_JSON_BIND_REQUIRED ("H", &trustwave::msg::hdr),
+        struct traits<trustwave::msg> :
+                binding::object<
+                TAO_JSON_BIND_REQUIRED ("H", &trustwave::msg::hdr),
                 TAO_JSON_BIND_REQUIRED("msgs", &trustwave::msg::msgs) > {
         };
 
         template<>
-        struct traits<trustwave::res_msg> : binding::object<TAO_JSON_BIND_REQUIRED ("H", &trustwave::res_msg::hdr),
+        struct traits<trustwave::res_msg> :
+                binding::object<
+                TAO_JSON_BIND_REQUIRED ("H", &trustwave::res_msg::hdr),
                 TAO_JSON_BIND_REQUIRED("msgs", &trustwave::res_msg::msgs) > {
         };
 
         template<>
-        struct traits<trustwave::result_msg> : binding::object<
+        struct traits<trustwave::result_msg> :
+                binding::object<
                 TAO_JSON_BIND_REQUIRED("res", &trustwave::result_msg::res_),
                 TAO_JSON_BIND_REQUIRED("id", &trustwave::result_msg::id_) > {
         };
 
         template<>
-        struct traits<trustwave::action_msg> : binding::object<
-
+        struct traits<trustwave::action_msg> :
+                binding::object<
                 TAO_JSON_BIND_REQUIRED("id", &trustwave::action_msg::id_) > {
         };
 
@@ -70,8 +75,9 @@ namespace tao {
 
         template<>
         struct traits<trustwave::single_param_action_msg>
-                : binding::object<binding::inherit<traits<trustwave::action_msg> >,
-                        TAO_JSON_BIND_REQUIRED("param", &trustwave::single_param_action_msg::param) > {
+                : binding::object<
+                binding::inherit<traits<trustwave::action_msg> >,
+                TAO_JSON_BIND_REQUIRED("param", &trustwave::single_param_action_msg::param) > {
 
         };
 
@@ -84,10 +90,12 @@ namespace tao {
 */
 
         template<>
-        struct traits<trustwave::smb_get_file_info_msg> : binding::object<
+        struct traits<trustwave::smb_get_file_info_msg> :
+                binding::object<
                 binding::inherit<traits<trustwave::single_param_action_msg> > > {
-            TAO_JSON_DEFAULT_KEY("get_file_info");
+                TAO_JSON_DEFAULT_KEY("get_file_info");
         };
+
         template<>
         struct traits<trustwave::smb_file_exists_msg> : binding::object<
                 binding::inherit<traits<trustwave::single_param_action_msg> > > {
@@ -107,7 +115,8 @@ namespace tao {
 */
        template<>
         struct traits<trustwave::local_start_session_msg>
-                : binding::object<binding::inherit<traits<trustwave::action_msg> >,
+                : binding::object<
+                binding::inherit<traits<trustwave::action_msg> >,
                         TAO_JSON_BIND_REQUIRED("remote", &trustwave::local_start_session_msg::remote),
                         TAO_JSON_BIND_REQUIRED("domain", &trustwave::local_start_session_msg::domain),
                         TAO_JSON_BIND_REQUIRED("username", &trustwave::local_start_session_msg::username),
@@ -123,9 +132,10 @@ namespace tao {
         };
 
         template<>
-        struct traits<trustwave::wmi_action_wql_query_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
-                                                     TAO_JSON_BIND_REQUIRED( "wql", &trustwave::wmi_action_wql_query_msg::wql ),
-            TAO_JSON_BIND_OPTIONAL( "wmi_namespace", &trustwave::wmi_action_wql_query_msg::wmi_namespace ) >
+        struct traits<trustwave::wmi_action_wql_query_msg> : binding::object<
+                binding::inherit<traits<trustwave::action_msg> >,
+                TAO_JSON_BIND_REQUIRED( "wql", &trustwave::wmi_action_wql_query_msg::wql ),
+                TAO_JSON_BIND_OPTIONAL( "wmi_namespace", &trustwave::wmi_action_wql_query_msg::wmi_namespace ) >
             {
                 TAO_JSON_DEFAULT_KEY( "wmi_wql" );
             };
@@ -138,6 +148,7 @@ namespace tao {
                         TAO_JSON_BIND_REQUIRED("value", &trustwave::reg_action_query_value_msg::value_) > {
             TAO_JSON_DEFAULT_KEY("query_value");
         };
+
         template<>
         struct traits<trustwave::reg_action_get_os_msg>
                 : binding::object<binding::inherit<traits<trustwave::action_msg> >> {
@@ -157,6 +168,7 @@ namespace tao {
                         TAO_JSON_BIND_REQUIRED("key", &trustwave::reg_action_key_exists_msg::key_) > {
             TAO_JSON_DEFAULT_KEY("key_exists");
         };
+
         template<>
         struct traits<trustwave::smb_read_file_msg> :
                 binding::object<binding::inherit<traits<trustwave::action_msg> >,
@@ -164,15 +176,16 @@ namespace tao {
                                                       TAO_JSON_BIND_OPTIONAL("size",
                                                                              &trustwave::smb_read_file_msg::size_),
         TAO_JSON_BIND_OPTIONAL("offset", &trustwave::smb_read_file_msg::offset_)> {
-        TAO_JSON_DEFAULT_KEY("read_file");
-    };
-    template<>
-    struct traits<trustwave::reg_action_value_exists_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
-                                                            TAO_JSON_BIND_REQUIRED( "key", &trustwave::reg_action_value_exists_msg::key_ ),
-    TAO_JSON_BIND_REQUIRED( "value", &trustwave::reg_action_value_exists_msg::value_ ) >
-{
-    TAO_JSON_DEFAULT_KEY( "value_exists" );
-};
+            TAO_JSON_DEFAULT_KEY("read_file");
+        };
+
+        template<>
+        struct traits<trustwave::reg_action_value_exists_msg> : binding::object<binding::inherit<traits<trustwave::action_msg> >,
+                                                                TAO_JSON_BIND_REQUIRED( "key", &trustwave::reg_action_value_exists_msg::key_ ),
+        TAO_JSON_BIND_REQUIRED( "value", &trustwave::reg_action_value_exists_msg::value_ ) >
+        {
+              TAO_JSON_DEFAULT_KEY( "value_exists" );
+        };
 
 }
 }
