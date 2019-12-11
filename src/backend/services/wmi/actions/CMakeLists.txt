@@ -5,7 +5,7 @@ include(../../Openvas.cmake)
 
 link_directories(${OPENVAS_SMB_LINKS})
 include_directories(${OPENVAS_SMB_INCLUDES})
-include_directories(../../src)
+include_directories(../../../src)
 
 set(SOURCE_FILES wql_action.cpp)
 add_library(tw-wmi-actions OBJECT ${SOURCE_FILES})
