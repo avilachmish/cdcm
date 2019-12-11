@@ -79,7 +79,7 @@ void workers_monitor::monitor(const std::string& worker_name)
      //   else {
        //      AU_LOG_ERROR("worker process cannot be created");
        //     cerr  << "error: worker process cannot be created" << endl; //ERROR
-        }
+       // }
     }
 }
 
