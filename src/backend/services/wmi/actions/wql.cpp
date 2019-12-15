@@ -2,7 +2,7 @@
 // Created by rfrenkel on 11/5/2019.
 //
 
-#include "wql_action.hpp"
+#include "wql.hpp"
 
 #include <tuple>
 #include <string>
@@ -136,4 +136,13 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
 
     res->res(wql_resp_json);
     return 0;
+}
+
+
+// instance of the our plugin
+static std::shared_ptr<WMI_WQL_Action> instance = nullptr;
+
+// extern function, that declared in "action.hpp", for export the plugin from dll
+std::shared_ptr<trustwave::Action_Base> import_action() {
+    return instance ? instance : (instance = std::make_shared<WMI_WQL_Action>());
 }

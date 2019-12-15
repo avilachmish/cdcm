@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 
-link_directories( ${SMB_LINKS} ${OPENVAS_SMB_LINKS} /usr/lib64/heimdal )
-
 set(SOURCE_FILES
         cdcm_broker.cpp
         message_broker.cpp
@@ -10,7 +8,6 @@ set(SOURCE_FILES
 		maintenance.cpp)
 add_executable(cdcm_broker ${SOURCE_FILES})
 add_subdirectory(actions)
-include(../Openvas.cmake)
 
 target_link_libraries(cdcm_broker
 						pthread
@@ -24,8 +21,6 @@ target_link_libraries(cdcm_broker
 						tw-sessions-cache 
 						tw-zmq 
 						tw-singleton-runner
-						openvas_wmiclient
-						${OPENVAS_SMB_LIBS}
 		)
 install(TARGETS cdcm_broker
 		RUNTIME DESTINATION bin

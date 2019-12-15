@@ -1,5 +1,6 @@
 
 set (OPENVAS_SMB_SRC ${DEPS_DIR}/openvas-smb) #/sandbox/src/deps/
+
 set (OPENVAS_SMB_INCLUDES
         ${OPENVAS_SMB_SRC}
         ${OPENVAS_SMB_SRC}/wmi
@@ -7,6 +8,7 @@ set (OPENVAS_SMB_INCLUDES
 
 set (OPENVAS_SMB_LINKS
         ${OPENVAS_SMB_SRC}/build/wmi
+        /usr/lib64/heimdal
         )
 
 SET (OPENVAS_SMB_LIBS
@@ -29,4 +31,7 @@ SET (OPENVAS_SMB_LIBS
         libwind.a
         sqlite3
         )
+
+link_directories(${OPENVAS_SMB_LINKS} )
+include_directories(${OPENVAS_SMB_INCLUDES})
 

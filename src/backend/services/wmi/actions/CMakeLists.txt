@@ -1,17 +1,19 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 
-include(../../Openvas.cmake)
+set(ACTION_NAMES wql)
 
-link_directories(${OPENVAS_SMB_LINKS})
-include_directories(${OPENVAS_SMB_INCLUDES})
-include_directories(../../../src)
+set(LD_ACTION_LIBS tw-wmi-client)
 
-set(SOURCE_FILES wql_action.cpp)
-add_library(tw-wmi-actions OBJECT ${SOURCE_FILES})
-target_link_libraries(tw-wmi-actions tw-wmi-client tw-common)
-install(TARGETS tw-wmi-actions LIBRARY DESTINATION lib
-        DESTINATION ${lib_dest})
+foreach(X IN ITEMS ${ACTION_NAMES})
+    message(STATUS "Building ${X} action")
+    add_library(wmi_${X} SHARED ${X}.cpp)
+    target_link_libraries(wmi_${X} ${LD_ACTION_LIBS})
+endforeach()
 
-install(TARGETS tw-wmi-actions  LIBRARY  DESTINATION lib
-        DESTINATION ${release_lib_dest})
+list(TRANSFORM ACTION_NAMES PREPEND "wmi_" OUTPUT_VARIABLE WMI_ACTIONS_LIST)
+install(TARGETS ${WMI_ACTIONS_LIST} LIBRARY DESTINATION lib
+        DESTINATION ${lib_dest}/plugins)
+
+install(TARGETS ${WMI_ACTIONS_LIST}  LIBRARY  DESTINATION lib
+        DESTINATION ${release_lib_dest}/plugins)
