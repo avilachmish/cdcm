@@ -70,7 +70,7 @@ std::string wql_resp_to_json(std::string work_str) {
         consumer.begin_object();
         for (std::vector<std::basic_string<char> >::size_type j=0; j< tokenized_response[i].size(); ++j )
         {
-            //std::cout << j << " inserting pair: " <<  tokenized_response[0][j] << " : "  << tokenized_response[i][j] << std::endl; //rotem to delete
+            //std::cout << j << " inserting pair: " <<  tokenized_response[0][j] << " : "  << tokenized_response[i][j] << std::endl;
             consumer.key( tokenized_response[0][j] );
             consumer.string( tokenized_response[i][j]);
             consumer.member();
@@ -82,7 +82,6 @@ std::string wql_resp_to_json(std::string work_str) {
     consumer.end_array();
     const tao::json::value json_value = std::move( consumer.value );
     std::string json_value_as_str = to_string(json_value,1);
-    //std::cout << json_value_as_str  << std::endl; //rotem to delete
 
     return (std::move(to_string(json_value,1)));
 }
@@ -126,7 +125,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
     auto query_result = client->query_remote_asset(wmi_wql_action->wql);
     if (false == std::get<0>(query_result) )
     {
-        AU_LOG_ERROR("failed to get wql response. %s", std::get<1>(query_result).c_str()); //rotem TODO
+        AU_LOG_ERROR("failed to get wql response");
         res->res(std::string(std::get<1>(query_result)));
         return -1;
     }

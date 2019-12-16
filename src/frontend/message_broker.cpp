@@ -32,7 +32,6 @@ message_broker::message_broker(zmq::context_t &ctx) :
                 workers_(authenticated_scan_server::instance().settings.heartbeat_expiry_),
                 replied_(0)
 {
-    std::cerr << "in message_broker c'tor" << std::endl; //rotem TODO delete
 }
 
 //  ---------------------------------------------------------------------
@@ -286,7 +285,7 @@ void message_broker::client_process(const std::string& sender, std::unique_ptr <
     }
     trustwave::msg tm;
     for (auto action_message : recieved_msg.msgs){
-        //AU_LOG_DEBUG1("Looking for %s", action_message->name().c_str()); //rotem original line
+        //AU_LOG_DEBUG1("Looking for %s", action_message->name().c_str());
         AU_LOG_DEBUG("Looking for %s", action_message->name().c_str());
         auto act1 = trustwave::authenticated_scan_server::instance().public_dispatcher.find(action_message->name());
         if(!act1)
