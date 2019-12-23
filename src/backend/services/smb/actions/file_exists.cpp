@@ -41,7 +41,7 @@ int SMB_File_Exists::act(boost::shared_ptr <session> sess, std::shared_ptr<actio
     trustwave::smb_client rc;
     auto connect_res = rc.connect(base.c_str());
     if(!connect_res.first){
-
+            //rotem TODO: remove this after code review
 //         based on linux error https://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/Errors/unix_system_errors.html and description in
 //         ENOMEM  Out of memory. error no 12
 //         EINVAL if an invalid parameter passed, like no file, or smbc_init not called. error no 22
