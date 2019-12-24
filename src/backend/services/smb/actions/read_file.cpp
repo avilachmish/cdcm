@@ -53,7 +53,7 @@ namespace {
         size_t outPos = 0;      // Current letter in the output stream
 
         std::string ret;
-        ret.reserve(base64_encoded_length(inLen));
+        ret.reserve(base64_encoded_length(inLen)+1,'\0');
         while (inLen--) // Scan the input bit stream
         {
             currByte = *(inBuf++);
