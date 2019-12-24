@@ -155,7 +155,6 @@ class Test_Runner
             asset_name = xml_session.attributes["asset_name"]
             tmp_session.asset_details = @assets_list[asset_name]
 
-            #todo: rotem, think if needed
             session_name = xml_session.attributes["session_name"]
             tmp_session.session_name = session_name
 

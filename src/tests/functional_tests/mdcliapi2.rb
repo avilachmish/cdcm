@@ -140,6 +140,10 @@ class MajorDomoClient
     reply_json = JSON.parse(reply[0])
     session.session_items[0].resp_msg = reply_json.to_json.to_s
 
+    log.info ("#{self.class.name}::#{__callee__}") {"will verify results"}
+    res = @verifier.verify(session.session_items[0])
+    short_dump =  short_after_run_dump(session, session.session_items[0])
+    puts short_dump  
     # the "res" holds the session_id, determained and received by the broker
     session_id = reply_json['msgs'][0]['res'] #works with trustwave's broker + worker
     #session_id = reply_json['H']['session_id'] # works with zmq ruby broker + worker
