@@ -52,8 +52,8 @@ namespace {
         size_t charCount = 0;   // Count byte tripples
         size_t outPos = 0;      // Current letter in the output stream
 
-        std::string ret;
-        ret.reserve(base64_encoded_length(inLen)+1,'\0');
+        std::string ret (base64_encoded_length(inLen)+1, '\0');
+
         while (inLen--) // Scan the input bit stream
         {
             currByte = *(inBuf++);
@@ -115,11 +115,16 @@ int SMB_Read_File::act(boost::shared_ptr <session> sess, std::shared_ptr<action_
         return -1;
     }
     ssize_t r = rc.read(off,sz,buff);
+    if (-1 == r) {
+        res->res("Error: read_file failed");
+        return -1;
+    }
+
     auto c64_str = base64_encode(buff,r);
     res->res(c64_str.c_str());//fixme assaf figure aou whi strin assignment doesn't  work
     return 0;
-
 }
+
 static std::shared_ptr<SMB_Read_File> instance = nullptr;
 
 
