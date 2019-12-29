@@ -218,7 +218,8 @@ int message_worker::worker_loop()
                                             result_message)){
                 AU_LOG_DEBUG("action %s returned with an error", action_message->name().c_str());
             }
-            AU_LOG_DEBUG("Done %s", res.msgs[0]->res().c_str());
+            //AU_LOG_DEBUG("Done %s", res.msgs[0]->res().c_str());
+            AU_LOG_DEBUG("Done");
         }
         const tao::json::value v1 = res;
         auto reply_body_str = to_string(v1, 2);
