@@ -85,7 +85,7 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(const std::string &
         return std::make_tuple(false, "Error: Some wmi error happened");
     }
     std::string response_str(response_raw_ptr);
-    AU_LOG_DEBUG("wmi query result: \n%s", response_str.c_str());
+    //AU_LOG_DEBUG("wmi query result: \n%s", response_str.c_str());
     return {true, std::move(response_str)};
 }
 
