@@ -7,7 +7,7 @@
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include <vector>
 
-#include "../common/protocol/protocol.hpp"
+#include "protocol/protocol.hpp"
 //static void enumf( std::string& msg)
 //{
 //    mdcli session("tcp://127.0.0.1:5555", 1);
@@ -81,14 +81,12 @@ static void fc(int )
                 [
    
                     {
-                      "read_file"  :
+                      "get_file_info"  :
                             {
                                 "id": ")"
                                         + act_id4
                                         + R"(",
-                                "path":"ADMIN$//hh.exe",
-                                "offset":"100",
-                                "size":"100"
+                                "param":"ADMIN$//hh.exe"
 
 
 

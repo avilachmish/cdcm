@@ -14,13 +14,13 @@
 // Comments: 
 
 #include "message_broker.hpp"
-#include "../common/client.hpp"
-#include "../common/session.hpp"
-#include "../common/protocol/protocol.hpp"
-#include "../common/singleton_runner/authenticated_scan_server.hpp"
-#include "../common/zmq/mdp.hpp"
-#include "../common/zmq/zmq_helpers.hpp"
-#include "../common/zmq/zmq_message.hpp"
+#include "client.hpp"
+#include "session.hpp"
+#include "protocol/protocol.hpp"
+#include "singleton_runner/authenticated_scan_server.hpp"
+#include "zmq/mdp.hpp"
+#include "zmq/zmq_helpers.hpp"
+#include "zmq/zmq_message.hpp"
 #include <zmq.hpp>
 #include <functional>
 #include <boost/asio.hpp>
@@ -173,11 +173,13 @@ void message_broker::worker_process(const std::string& sender, std::unique_ptr <
                 //  Remove & save client return envelope and insert the
                 //  protocol header and service name, then rewrap envelope.
                 std::string client = msg->unwrap();
-                msg->wrap(MDPC_CLIENT, "");
-                msg->wrap(client.c_str(), "");
-                msg->send(*external_socket_);
-                replied_++;
-                worker_waiting(wrk);
+                if(!client.empty()) {
+                    msg->wrap(MDPC_CLIENT, "");
+                    msg->wrap(client.c_str(), "");
+                    msg->send(*external_socket_);
+                    replied_++;
+                    worker_waiting(wrk);
+                }
             }
             else{
                 worker_delete(wrk, true);
@@ -250,6 +252,30 @@ void message_broker::worker_waiting(trustwave::sp_worker_t worker_ptr)
 
 //  ---------------------------------------------------------------------
 //  Process a request coming from a client
+void message_broker::do_act(trustwave::res_msg& result_message, std::shared_ptr<action_msg> action_message,boost::shared_ptr <session> sess)
+{
+    AU_LOG_DEBUG1("Looking for %s", action_message->name().c_str());
+    auto act1 = trustwave::authenticated_scan_server::instance().public_dispatcher.find(action_message->name());
+    auto res = std::make_shared<trustwave::result_msg>();
+    result_message.msgs.push_back(res);
+    if (-1 == act1->act(sess, action_message, res)) {
+        AU_LOG_DEBUG("action %s returned with an error", action_message->name().c_str());
+    }
+    replied_++;
+}
+void message_broker::send_local_to_client(const trustwave::res_msg& result_message,const std::string &sender,const std::string &client)
+{
+    if(!client.empty()&&!sender.empty()) {
+        const tao::json::value res_as_json = result_message;
+        auto res_body = to_string(res_as_json, 2);
+        zmsg *reply = new zmsg;
+        reply->body_set(res_body.c_str());
+        AU_LOG_DEBUG("sending to client :\n %s", res_body.c_str());
+        reply->wrap(MDPC_CLIENT, client.c_str());
+        reply->wrap(sender.c_str(), "");
+        reply->send(*external_socket_);
+    }
+}
 
 void message_broker::client_process(const std::string& sender, std::unique_ptr <zmsg> &&msg)
 {
@@ -266,67 +292,59 @@ void message_broker::client_process(const std::string& sender, std::unique_ptr <
      *        create message , wrap sender and set single action as body
      *        dispatch message
      */
+    //fixme assaf update comment
     using namespace tao::json;
-    std::string mstr(msg->body());
-    trustwave::msg recieved_msg;
+    std::string_view mstr(msg->body());
+    trustwave::raw_msg unknown_actions_msg;
+    trustwave::msg known_actions_msg;
     try {
         const auto req_body_as_json = from_string(mstr);
-        recieved_msg = req_body_as_json.as<trustwave::msg>();
+        auto msg_object = req_body_as_json.get_object();
+        known_actions_msg.hdr = unknown_actions_msg.hdr = msg_object.at("H").as<header>();
+        auto msgs_array = msg_object.at("msgs").get_array();
+
+        for (auto act_msg:msgs_array) {
+            auto action_obj = act_msg.get_object();
+            const auto act_key = action_obj.cbegin()->first;
+            AU_LOG_DEBUG1("Looking for %s", act_key.c_str());
+            auto act1 = trustwave::authenticated_scan_server::instance().public_dispatcher.find(act_key);
+            if(act1)
+            {
+                AU_LOG_DEBUG("%s found", act_key.c_str());
+                auto act_m = act1->get_message(act_msg);
+                known_actions_msg.msgs.push_back(act_m);
+
+            } else{
+                AU_LOG_ERROR("%s not found! perhaps a worker plugin", act_key.c_str());
+                unknown_actions_msg.msgs.push_back(action_obj);
+            }
+
     }
-    catch(std::exception& e)
-    {
+    }
+    catch (std::exception &e) {
         AU_LOG_ERROR("Malformed message %s",e.what());
         return;
     }
     AU_LOG_DEBUG("body : %s", msg->body());
-    if (recieved_msg.hdr.session_id != std::string("N/A")){
+    if (unknown_actions_msg.hdr.session_id != std::string("N/A")) {
         trustwave::authenticated_scan_server::instance().sessions->touch_by <shared_mem_sessions_cache::id>(
-                        recieved_msg.hdr.session_id);
+                unknown_actions_msg.hdr.session_id);
     }
-    trustwave::msg tm;
-    for (auto action_message : recieved_msg.msgs){
-        //AU_LOG_DEBUG1("Looking for %s", action_message->name().c_str());
-        AU_LOG_DEBUG("Looking for %s", action_message->name().c_str());
-        auto act1 = trustwave::authenticated_scan_server::instance().public_dispatcher.find(action_message->name());
-        if(!act1)
-        {
-            AU_LOG_ERROR("%s not found! perhaps a worker plugin", action_message->name().c_str());
-            workers_.dump();
-
-            tm.hdr = recieved_msg.hdr;
-            tm.msgs.push_back(action_message);
-            break;
+    if (!known_actions_msg.msgs.empty()) {
+        trustwave::res_msg result_message;
+        result_message.hdr = unknown_actions_msg.hdr;
+        auto sess = trustwave::authenticated_scan_server::instance().get_session(result_message.hdr.session_id);
+        for (auto action_message : known_actions_msg.msgs) {
+            do_act(result_message,action_message,sess);
         }
-        else{
-            trustwave::res_msg result_message;
-            result_message.hdr = recieved_msg.hdr;
-            auto res = std::make_shared <trustwave::result_msg>();
-            result_message.msgs.push_back(res);
-            if (-1 == act1->act(trustwave::authenticated_scan_server::instance().get_session(
-                                                            recieved_msg.hdr.session_id), action_message, res)){
-                AU_LOG_DEBUG("action %s returned with an error", action_message->name().c_str());
-            }
-            const tao::json::value res_as_json = result_message;
-            auto res_body = to_string(res_as_json, 2);
-            zmsg *reply = new zmsg;
-            reply->body_set(res_body.c_str());
-            AU_LOG_DEBUG("sending to client :\n %s",res_body.c_str());
-            std::string client = msg->unwrap();
-            reply->wrap(MDPC_CLIENT, client.c_str());
-            reply->wrap(sender.c_str(), "");
-
-            reply->send(*external_socket_);
-            replied_++;
-
-        }
+        send_local_to_client(result_message,sender, msg->unwrap());
     }
-    if(! tm.msgs.empty())
-    {
-        value v(tm);
+    if (!unknown_actions_msg.msgs.empty()) {
+        value v(unknown_actions_msg);
         auto m = std::make_unique <zmsg>();
         m->body_set(to_string(v, 2).c_str());
         m->wrap(sender.c_str(), "");
-        service_dispatch(std::move(m), recieved_msg.hdr.session_id);
+        service_dispatch(std::move(m), unknown_actions_msg.hdr.session_id);
     }
 }
 

@@ -21,7 +21,7 @@
 #include <string>                          // for string
 #include <array>
 #include <memory>
-#include <iostream>
+
 
 namespace trustwave {
 
@@ -43,7 +43,7 @@ public:
 
     const std::string& remote() const;
     credentials creds() const;
-    
+
     template<typename T>
     std::shared_ptr <cdcm_client> get_client(cdcm_client_type c)
     {

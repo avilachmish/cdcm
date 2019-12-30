@@ -18,7 +18,7 @@
 //=====================================================================================================================
 //                                                  Include files
 //=====================================================================================================================
-#include "../../../../common/action.hpp"
+#include "action.hpp"
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 //=====================================================================================================================
@@ -31,8 +31,8 @@ class Registry_Action: public Action_Base
 {
 
 public:
-    Registry_Action(const std::string &name, const std::string &command) :
-                    Action_Base(name, command)
+    Registry_Action(const std::string_view command) :
+                    Action_Base(command)
     {
     }
 

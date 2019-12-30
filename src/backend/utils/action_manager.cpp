@@ -14,10 +14,10 @@
 //                          						Include files
 //=====================================================================================================================
 #include "action_manager.hpp"
-#include "../../common/dispatcher.hpp"
-#include "../../common/action.hpp"
+#include "dispatcher.hpp"
+#include "action.hpp"
 #include "shared_library.hpp"
-#include "../../common/singleton_runner/authenticated_scan_server.hpp"
+#include "singleton_runner/authenticated_scan_server.hpp"
 using namespace trustwave;
 
 std::vector<std::shared_ptr<shared_library>> action_manager::load(const boost::filesystem::path& p_dir,Dispatcher<Action_Base>& d) {
@@ -29,10 +29,10 @@ std::vector<std::shared_ptr<shared_library>> action_manager::load(const boost::f
         auto actionl = sl->get<import_action_cb_t>("import_action");
         if(actionl)
         {
-            AU_LOG_DEBUG("%s loaded.",p->path().filename().string().c_str());
             auto action=actionl();
             d.register1(action);
             sl_vec.push_back(sl);
+            AU_LOG_DEBUG("%s loaded.",p->path().filename().string().c_str());
         }
         else
         {

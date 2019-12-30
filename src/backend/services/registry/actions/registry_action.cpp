@@ -15,13 +15,13 @@
 
 #include "registry_action.hpp"
 #include "../registry_client.hpp"
-#include "../../../../common/session.hpp"
-#include "../../../../common/singleton_runner/authenticated_scan_server.hpp"
-#include "../../../../common/protocol/msg_types.hpp"
+#include "session.hpp"
+#include "singleton_runner/authenticated_scan_server.hpp"
+#include "protocol/msg_types.hpp"
 using namespace trustwave;
-std::shared_ptr <trustwave::registry_client> Registry_Action::client(boost::shared_ptr <session> sess, std::shared_ptr <result_msg> res)
+std::shared_ptr <registry_client> Registry_Action::client(boost::shared_ptr <session> sess, std::shared_ptr <result_msg> res)
 {
-    auto c = std::dynamic_pointer_cast <trustwave::registry_client>(sess->get_client <trustwave::registry_client>(trustwave::cdcm_client_type::REGISTRY_CLIENT));
+    auto c = std::dynamic_pointer_cast <trustwave::registry_client>(sess->get_client <trustwave::registry_client>(cdcm_client_type::REGISTRY_CLIENT));
 
     if (!c){
             AU_LOG_ERROR("Failed dynamic cast");

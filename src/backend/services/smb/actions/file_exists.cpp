@@ -21,10 +21,10 @@
 #include "../smb_client.hpp"
 #include "file_exists.hpp"
 
-#include "../../../../common/protocol/msg_types.hpp"
-#include "../../../../common/session.hpp"
-#include "../../../../common/singleton_runner/authenticated_scan_server.hpp"
-#include "../../../utils/pe_context.hpp"
+#include "protocol/msg_types.hpp"
+#include "session.hpp"
+#include "singleton_runner/authenticated_scan_server.hpp"
+#include "pe_context.hpp"
 using namespace trustwave;
 
 int SMB_File_Exists::act(boost::shared_ptr <session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
@@ -41,16 +41,6 @@ int SMB_File_Exists::act(boost::shared_ptr <session> sess, std::shared_ptr<actio
     trustwave::smb_client rc;
     auto connect_res = rc.connect(base.c_str());
     if(!connect_res.first){
-            //rotem TODO: remove this after code review
-//         based on linux error https://www-numi.fnal.gov/offline_software/srt_public_context/WebDocs/Errors/unix_system_errors.html and description in
-//         ENOMEM  Out of memory. error no 12
-//         EINVAL if an invalid parameter passed, like no file, or smbc_init not called. error no 22
-//         EEXIST  pathname already exists and O_CREAT and O_EXCL were used. error no 17
-//         EISDIR  pathname  refers  to  a  directory  and the access requested involved writing. error no 21
-//         EACCES  The requested access to the file is not allowed. error no 13
-//         ENODEV The requested share does not exist. error no 19
-//         ENOTDIR A file on the path is not a directory. error no 20
-//         ENOENT  A directory component in pathname does not exist. error no 02
 
         AU_LOG_DEBUG("got smb error: %i - %s", connect_res.second, std::strerror(connect_res.second));
 

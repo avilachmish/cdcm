@@ -22,9 +22,9 @@
 #include "../smb_client.hpp"
 #include "read_file.hpp"
 
-#include "../../../../common/protocol/msg_types.hpp"
-#include "../../../../common/session.hpp"
-#include "../../../../common/singleton_runner/authenticated_scan_server.hpp"
+#include "protocol/msg_types.hpp"
+#include "session.hpp"
+#include "singleton_runner/authenticated_scan_server.hpp"
 using namespace trustwave;
 namespace {
     namespace {
@@ -47,10 +47,10 @@ namespace {
             return std::string();
         }
 
-        unsigned int bitsContainer = 0;                  // A container for 24 bits from the input stream
-        unsigned char currByte; // A current byte from the input stream
-        size_t charCount = 0;   // Count byte tripples
-        size_t outPos = 0;      // Current letter in the output stream
+        unsigned int bitsContainer = 0;     // A container for 24 bits from the input stream
+        unsigned char currByte;             // A current byte from the input stream
+        size_t charCount = 0;               // Count byte tripples
+        size_t outPos = 0;                  // Current letter in the output stream
 
         std::string ret (base64_encoded_length(inLen)+1, '\0');
 
@@ -79,6 +79,7 @@ namespace {
             }
             ret[outPos++] = PAD;
         }
+        //AU_LOG_ERROR("ret : %s",ret.c_str());
         return ret;
     }
 }
@@ -94,7 +95,6 @@ int SMB_Read_File::act(boost::shared_ptr <session> sess, std::shared_ptr<action_
     base.append(sess->remote()).append("/").append(smb_action->path_);
     trustwave::smb_client rc;
     auto connect_result  = rc.connect(base.c_str());
-
     if(!connect_result.first)
     {
         AU_LOG_DEBUG("got smb error: %i - %s", connect_result.second, std::strerror(connect_result.second));
@@ -123,6 +123,7 @@ int SMB_Read_File::act(boost::shared_ptr <session> sess, std::shared_ptr<action_
     auto c64_str = base64_encode(buff,r);
     res->res(c64_str.c_str());//fixme assaf figure aou whi strin assignment doesn't  work
     return 0;
+
 }
 
 static std::shared_ptr<SMB_Read_File> instance = nullptr;
