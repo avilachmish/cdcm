@@ -2,7 +2,8 @@
 <root>
     <cdcm_client_settings response_timeout="30" />
     <assets>
-        <asset name="asset1" address="10.70.32.162" user="sigops" pass="Truncat3" domain="TSLAB.PRV" workstation="." />
+        <!-- <asset name="asset1" address="10.70.32.173" user="sigops" pass="Truncat3" domain="TSLAB.PRV" workstation="." /> -->
+        <asset name="asset1" address="10.70.32.173" user="Administrator" pass="Truncat3" domain="WORKGROUP" workstation="." />
     </assets>
     <verification_methods>
         <!-- vm_params are expected to be found as atributes of the seesion_item element -->
@@ -22,7 +23,7 @@
 
     <test_sets>
         <test_set test_set_name="01" >
-            <session_item  action="enumerate" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" verification_method="substr_exist" substr="class_name" />
+            <session_item  action="enumerate" key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\Packages" verification_method="substr_exist" substr="class_name" />
             <session_item  action="key_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" verification_method="boolean" expected="true" />
             <session_item  action="value_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" value="SystemRoot" verification_method="boolean" expected="true" />
             <session_item  action="get_remote_file_version" param="ADMIN$/System32/ntoskrnl.exe"  verification_method="regex_match" regex="/6.1.7601.24408/" /> 

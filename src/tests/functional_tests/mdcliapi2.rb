@@ -41,7 +41,7 @@ class MajorDomoClient
     @context = ZMQ::Context.new(1)
     @client = nil
     @poller = ZMQ::Poller.new
-    @timeout = 2500
+    @timeout = 7
     @resp_timeout = 5
     @sessions = Array.new
     @verifier = Verifier.new
@@ -104,7 +104,7 @@ class MajorDomoClient
     @client = @context.socket ZMQ::DEALER
     @client.setsockopt ZMQ::LINGER, 0
     # set dealer identity on the socket, like: 4 Hex-4 Hex (ABCD-12EF)
-    dealer_identity = SecureRandom.hex(2).upcase + "-" + SecureRandom.hex(2).upcase
+    dealer_identity = SecureRandom.hex(2).upcase + "-" + SecureRandom.hex(2).upcase # SecureRandom.uuid.to_s
     @client.setsockopt ZMQ::IDENTITY, dealer_identity
     @client.connect @broker
     @poller.register @client, ZMQ::POLLIN
@@ -129,6 +129,7 @@ class MajorDomoClient
     start_session_str = Message_Formater.instance.start_session_str(session)
     log.info ("#{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
     session.session_items[0].req_msg = start_session_str
+
     send("echo", start_session_str)
 
     reply = recv()
@@ -149,7 +150,9 @@ class MajorDomoClient
     log.info ("#{self.class.name}::#{__callee__}") {"executing session item: \n" + session_item.dump_before_reply}
     action_str = Message_Formater.instance.action_str(session, session_item)
     log.info ("#{self.class.name}::#{__callee__}") {"sending: \n" + action_str}
+
     session_item.req_msg = action_str
+
     send("echo", action_str)
 
     reply = recv()
@@ -394,13 +397,13 @@ class Message_Formater
     ########################################
     def action_str(session, session_item)
 
-        action_str = '{"H": {"session_id":"' + session.session_id + '"}, "msgs":[ { "' + session_item.action + '" : { "id" : "' + session_item.req_id + '"'
+        action_str = '{"H":{"session_id":"' + session.session_id + '"},"msgs":[{"' + session_item.action + '":{"id":"' + session_item.req_id + '"'
         session_item.action_params.each {
             |param_pair|
-            sub_str = ', "' + param_pair[0] + '" : "' + param_pair[1] + '" '
+            sub_str = ',"' + param_pair[0] + '":"' + param_pair[1] + '"'
             action_str +=  sub_str
         }
-        action_str += '} } ]}'
+        action_str += '}}]}'
 
       return action_str
     end

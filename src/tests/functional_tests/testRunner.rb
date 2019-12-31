@@ -12,7 +12,8 @@ require 'results_verification.rb'
 class Test_Runner
 
     def initialize
-        @client = MajorDomoClient.new('tcp://10.70.68.23:5555')
+        # @client = MajorDomoClient.new('tcp://127.0.0.1:55555')
+        @client = MajorDomoClient.new('tcp://10.50.9.100:5555')
         @sessions = Array.new
         @assets_list = Hash.new { | asset_name , asset_details |}
         @actions_list = Hash.new { | action_name , action_params |}

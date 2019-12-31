@@ -2,7 +2,7 @@
 <root>
     <cdcm_client_settings response_timeout="30" />
     <assets>
-        <asset name="asset1" address="10.70.32.162" user="sigops" pass="Truncat3" domain="TSLAB.PRV" workstation="." />
+        <asset name="asset1" address="10.70.32.160" user="Administrator" pass="Truncat3" domain="WORKGROUP" workstation="." />
     </assets>
     <verification_methods>
         <!-- vm_params are expected to be found as atributes of the seesion_item element -->
