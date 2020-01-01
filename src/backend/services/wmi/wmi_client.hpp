@@ -30,7 +30,10 @@ namespace trustwave {
         ~wmi_client();
 
         std::tuple<bool, std::string> connect(const session& session, std::string & wmi_namespace);
+        std::tuple<bool, std::string> connect_reg(const session& session, std::string & wmi_namespace);
         std::tuple<bool, std::string> query_remote_asset(const std::string & wql_query);
+        std::tuple<bool, std::string> registry_enum_key(unsigned int hive, const std::string & key);
+
         std::tuple<bool, std::string> close_connection();
 
     private:

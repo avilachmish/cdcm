@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 
-set(ACTION_NAMES wql)
+set(ACTION_NAMES wql reg_enum_key)
 
 set(LD_ACTION_LIBS tw-wmi-client)
 

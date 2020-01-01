@@ -7,7 +7,7 @@
 //=====================================================================================================================
 //                          						Include files
 //=====================================================================================================================
-#include "action.hpp" //rotem TODO: check if ../../ can be removed
+#include "action.hpp"
 #include "protocol/msg_types.hpp"
 #include "protocol/protocol.hpp"
 

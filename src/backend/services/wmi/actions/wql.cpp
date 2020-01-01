@@ -9,10 +9,8 @@
 #include <boost/tokenizer.hpp>
 
 #include "../wmi_client.hpp"
-#include "../../../../common/session.hpp"
-#include "../../../../common/protocol/msg_types.hpp"
-#include "../../../../common/protocol/protocol.hpp"
-#include "../../../../common/singleton_runner/authenticated_scan_server.hpp"
+#include "session.hpp"
+#include "singleton_runner/authenticated_scan_server.hpp"
 
 
 using namespace trustwave;

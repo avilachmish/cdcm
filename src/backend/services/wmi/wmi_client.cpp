@@ -66,6 +66,53 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
     return std::make_tuple(true, std::string("connection to asset " +  session.remote() + " succeeded"));
 }
 
+/************************************************************
+ *
+ * @param session       - reference to the session object
+ * @param wmi_namespace - wmi namespace, should be known when connecting to the asset
+ * @return              - tuple of bool and result string. if bool is false, an error occurred, otherwise the
+ *                        tuple's second will hold the response
+ ***********************************************************/
+std::tuple<bool, std::string> wmi_client::connect_reg(const session& session, std::string & wmi_namespace)
+{
+    //build the argc,argv
+    auto credentials = session.creds();
+    std::string domain_usr_pass_arg;
+    constexpr size_t domain_usr_pass_arg_size = 512;
+    domain_usr_pass_arg.reserve(domain_usr_pass_arg_size);
+    domain_usr_pass_arg.append(((credentials.domain_))).append("/").append(credentials.username_).append("%").append(credentials.password_);
+
+    std::string remote_asset_arg;
+    constexpr size_t remote_asset_arg_size = 256;
+    remote_asset_arg.reserve(remote_asset_arg_size);
+    remote_asset_arg.append("//").append(session.remote());
+
+    std::string wmi_namespace_arg ("root\\cimv2");
+    if (  !wmi_namespace.empty() ) {
+        wmi_namespace_arg = wmi_namespace;
+        AU_LOG_DEBUG("wmi_namespace was supplied:  %s", wmi_namespace.c_str());
+    }
+    else {
+        AU_LOG_DEBUG("wmi_namespace was not supplied. using default: root\\cimv2");
+    }
+
+    std::vector<char*> argv = { std::string("wmic").data(),
+                                std::string("-U").data(),
+                                domain_usr_pass_arg.data(),
+                                remote_asset_arg.data(),
+                                wmi_namespace_arg.data()};
+    //connect to the asset
+    wmi_handle = wmi_connect_reg(argv.size(), argv.data());
+    if (!wmi_handle)
+    {
+        AU_LOG_ERROR("Error: Failed to connect to asset %s", session.remote().c_str());
+        return std::make_tuple(false, std::string( "Error: Failed to connect to asset: " + session.remote()) );
+    }
+
+    AU_LOG_DEBUG("connection to asset %s succeeded", session.remote().c_str());
+    return std::make_tuple(true, std::string("connection to asset " +  session.remote() + " succeeded"));
+}
+
 // rotem TODO: see if the response can arrive from outside as std::string
 std::tuple<bool, std::string> wmi_client::query_remote_asset(const std::string & wql_query)
 {
@@ -77,6 +124,29 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(const std::string &
 
     char* response_raw_ptr = nullptr;
     int ret = wmi_query(wmi_handle, wql_query.data(), &response_raw_ptr);
+    //rotem,assaf TODO: run with valgrind to discover if the response_raw_ptr is released or i should do that using the talloc_free(response_raw_ptr); ( see https://linux.die.net/man/3/talloc )
+    // NOTE: in case of error i can't get the exact error
+    if (-1 == ret)
+    {
+        AU_LOG_DEBUG("wmi query result with an error");
+        return std::make_tuple(false, "Error: Some wmi error happened");
+    }
+    std::string response_str(response_raw_ptr);
+    //AU_LOG_DEBUG("wmi query result: \n%s", response_str.c_str());
+    return {true, std::move(response_str)};
+}
+
+// rotem TODO: see if the response can arrive from outside as std::string
+std::tuple<bool, std::string> wmi_client::registry_enum_key(unsigned int hive, const std::string & key)
+{
+    if (key.empty())
+    {
+        AU_LOG_ERROR("Error: key is empty");
+        return std::make_tuple(false, "Error: key is empty");
+    }
+
+    char* response_raw_ptr = nullptr;
+    int ret = wmi_reg_enum_key(wmi_handle, hive, key.c_str(),  &response_raw_ptr);
     //rotem,assaf TODO: run with valgrind to discover if the response_raw_ptr is released or i should do that using the talloc_free(response_raw_ptr); ( see https://linux.die.net/man/3/talloc )
     // NOTE: in case of error i can't get the exact error
     if (-1 == ret)
