@@ -76,11 +76,11 @@ static void smbc_auth_fn(const char *pServer, const char *, char *pWorkgroup, in
             std::string(pServer));
     //  AU_LOG_DEBUG("server is %s ", pServer);
     static int krb5_set = 1;
-    const char *wg = "WORKGROUP";
+   // const char *wg = "CDCM";
     if (!sess->id().is_nil()) {
 
         AU_LOG_INFO("smbc_auth_fn session for %s found", pServer);
-        strncpy(pWorkgroup, wg, static_cast<size_t>(maxLenWorkgroup - 1));
+        strncpy(pWorkgroup, sess->creds().domain_.c_str(),  static_cast<size_t>(maxLenWorkgroup - 1));
         strncpy(pUsername, sess->creds().username_.c_str(), static_cast<size_t>(maxLenUsername - 1));
         strncpy(pPassword, sess->creds().password_.c_str(), static_cast<size_t>(maxLenPassword - 1));
         AU_LOG_INFO("smbc_auth_fn session for %s found and set", pServer);
@@ -97,7 +97,7 @@ static void smbc_auth_fn(const char *pServer, const char *, char *pWorkgroup, in
 
 
 std::pair<bool,int> smb_client::connect(const char *path) {
-    AU_LOG_ERROR("path: %s", path);
+    AU_LOG_DEBUG("path: %s", path);
     if (smbc_init(smbc_auth_fn, 1) < 0) {
         AU_LOG_ERROR("Unable to initialize libsmbclient");
         return std::make_pair(false,-1);
@@ -363,7 +363,7 @@ ssize_t smb_client::read(size_t offset, size_t size, char *dest)
             return -1;
         }
         curpos += bytesread;
-        AU_LOG_ERROR("%zu",curpos);
+        //AU_LOG_ERROR("%zu",curpos); //rotem TODO: can be removed?
     }
     return curpos;
 }
