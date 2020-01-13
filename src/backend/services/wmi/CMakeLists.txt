@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
-include(../Openvas.cmake)
-
+include(Openvas.cmake)
+include_directories(/sandbox/src/deps/openvas-smb/sandbox/src/deps/openvas-smb/)
 set(SOURCE_FILES wmi_client.cpp)
 add_library(tw-wmi-client SHARED ${SOURCE_FILES})
 target_link_libraries(tw-wmi-client  openvas_wmiclient tw-singleton-runner ${OPENVAS_SMB_LIBS})

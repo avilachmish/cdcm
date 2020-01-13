@@ -155,7 +155,7 @@ void message_broker::worker_delete(trustwave::sp_worker_t wrk, bool send_disconn
 void message_broker::worker_process(const std::string& sender, std::unique_ptr <zmsg> &&msg)
 {
     assert(msg && msg->parts() >= 1);     //  At least, command
-    //workers_.dump();
+    workers_.dump(); //rotem TODO, comment when done debug
     std::string command = reinterpret_cast <const char*>(msg->pop_front().c_str());
     bool worker_ready = workers_.exists(sender);
     auto wrk = worker_require(sender);

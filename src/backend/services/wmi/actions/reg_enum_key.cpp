@@ -21,6 +21,10 @@ using namespace trustwave;
  *********************************************************/
 int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
 {
+    AU_LOG_ERROR("rotem WMI_Reg_Enum_key_Action:"); //rotem to delete
+
+    std::cout << "rotem WMI_Reg_Enum_key_Action: " << std::endl; //rotem to delete
+
     if (!sess || (sess && sess->id().is_nil())){
         AU_LOG_ERROR("Session not found");
         res->res("Error: Session not found");
@@ -40,6 +44,7 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
         res->res("Error: Failed dynamic cast");
         return -1;
     }
+    std::cout << "rotem bye: " << std::endl; //rotem to delete
 
     //rotem: TODO: think how to distingush between our error and legit error
     auto connect_result = client->connect_reg(*sess, wmi_reg_enum_key_action->wmi_namespace);
@@ -50,7 +55,10 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
         return -1;
     }
 
-    auto query_result = client->registry_enum_key(std::stoi(wmi_reg_enum_key_action->hive), wmi_reg_enum_key_action->key);
+    std::cout << "rotem hive: "  << wmi_reg_enum_key_action->hive << std::endl; //rotem to delete
+    std::cout << "rotem hive: " << std::stoul(wmi_reg_enum_key_action->hive, 0, 16) << std::endl; //rotem to delete
+
+    auto query_result = client->registry_enum_key(std::stoul(wmi_reg_enum_key_action->hive,0,16), wmi_reg_enum_key_action->key);
     if (false == std::get<0>(query_result) )
     {
         AU_LOG_ERROR("failed to get wmi registry response");

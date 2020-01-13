@@ -99,8 +99,8 @@ std::tuple<bool, std::string> wmi_client::connect_reg(const session& session, st
     std::vector<char*> argv = { std::string("wmic").data(),
                                 std::string("-U").data(),
                                 domain_usr_pass_arg.data(),
-                                remote_asset_arg.data(),
-                                wmi_namespace_arg.data()};
+                                remote_asset_arg.data()};
+    //,                           wmi_namespace_arg.data()};
     //connect to the asset
     wmi_handle = wmi_connect_reg(argv.size(), argv.data());
     if (!wmi_handle)
@@ -137,8 +137,10 @@ std::tuple<bool, std::string> wmi_client::query_remote_asset(const std::string &
 }
 
 // rotem TODO: see if the response can arrive from outside as std::string
-std::tuple<bool, std::string> wmi_client::registry_enum_key(unsigned int hive, const std::string & key)
+std::tuple<bool, std::string> wmi_client::registry_enum_key(uint32_t hive, const std::string & key)
 {
+    std::cout << "hive: " << hive << std::endl; //rotem to delete
+    std::cerr << "key: " << key << std::endl; //rotem to delete
     if (key.empty())
     {
         AU_LOG_ERROR("Error: key is empty");

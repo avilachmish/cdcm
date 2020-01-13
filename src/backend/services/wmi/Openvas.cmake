@@ -1,11 +1,11 @@
 
 set (OPENVAS_SMB_SRC ${DEPS_DIR}/openvas-smb) #/sandbox/src/deps/
-
+message(${DEPS_DIR})
 set (OPENVAS_SMB_INCLUDES
         ${OPENVAS_SMB_SRC}
-        ${OPENVAS_SMB_SRC}/wmi
+       # ${OPENVAS_SMB_SRC}/wmi
         )
-
+message(${OPENVAS_SMB_INCLUDES})
 set (OPENVAS_SMB_LINKS
         ${OPENVAS_SMB_SRC}/build/wmi
         /usr/lib64/heimdal

@@ -91,6 +91,7 @@ std::string wql_resp_to_json(std::string work_str) {
  *********************************************************/
 int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
 {
+    AU_LOG_ERROR("WMI_WQL_Action::act");
     if (!sess || (sess && sess->id().is_nil())){
         AU_LOG_ERROR("Session not found");
         res->res("Error: Session not found");
@@ -110,7 +111,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
         res->res("Error: Failed dynamic cast");
         return -1;
     }
-
+    AU_LOG_DEBUG("WMI_WQL_Action::act before connect"); //rotem to delete
     //rotem: TODO: think how to distingush between our error and legit error
     auto connect_result = client->connect(*sess, wmi_wql_action->wmi_namespace);
     if (false == std::get<0>(connect_result) )
@@ -119,7 +120,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
         res->res(std::string("Error: Failed to connect to the asset"));
         return -1;
     }
-
+    AU_LOG_DEBUG("WMI_WQL_Action::act before send quesry"); //rotem to delete
     auto query_result = client->query_remote_asset(wmi_wql_action->wql);
     if (false == std::get<0>(query_result) )
     {
@@ -127,7 +128,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
         res->res(std::string(std::get<1>(query_result)));
         return -1;
     }
-
+    AU_LOG_DEBUG("WMI_WQL_Action::act query response arrived"); //rotem to delete
     std::string wql_raw_response = std::get<1>(query_result);
     std::string wql_resp_json = wql_resp_to_json(wql_raw_response);
 

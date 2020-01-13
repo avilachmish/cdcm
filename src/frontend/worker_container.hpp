@@ -48,9 +48,11 @@ struct worker {
     bool idle_;
     void dump() const
     {
+        std::cerr << "====================" << std::endl;
         std::cerr << "Worker : " << identity_ << std::endl;
         std::cerr << "Last session : " << last_worked_session_ << std::endl;
         std::cerr << "Idle : " << std::boolalpha<< idle_ << std::endl;
+        std::cerr << "Expiry (without substract of now) : " << expiry_.time_since_epoch().count() << std::endl; //rotem added to delete
         std::cerr << "Expiry in : " << std::chrono::duration_cast<std::chrono::milliseconds>(expiry_-chr::system_clock::now()).count() <<" milliseconds"<< std::endl;
     }
     explicit worker(std::string identity) :
