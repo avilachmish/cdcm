@@ -26,12 +26,9 @@
 #include <boost/asio.hpp>
 using namespace trustwave;
 message_broker::message_broker(zmq::context_t &ctx) :
-                context_(ctx),
-                internal_socket_(new zmq::socket_t(context_, ZMQ_ROUTER)),
-                external_socket_(new zmq::socket_t(context_, ZMQ_ROUTER)),
-                workers_(authenticated_scan_server::instance().settings.heartbeat_expiry_),
-                replied_(0)
-{
+        context_(ctx), internal_socket_(new zmq::socket_t(context_, ZMQ_ROUTER)), external_socket_(
+        new zmq::socket_t(context_, ZMQ_ROUTER)),
+        workers_(authenticated_scan_server::instance().settings()->heartbeat_expiry_), replied_(0) {
 }
 
 //  ---------------------------------------------------------------------
@@ -48,13 +45,13 @@ message_broker::~message_broker()
 
 void message_broker::bind_internal()
 {
-    const auto ep = authenticated_scan_server::instance().settings.broker_worker_listen_ep_;
+    const auto ep = authenticated_scan_server::instance().settings()->broker_worker_listen_ep_;
     internal_socket_->bind(ep);
     AU_LOG_INFO("CDCM broker is internal active at %s", ep.c_str());
 }
 void message_broker::bind_external()
 {
-    const auto ep = authenticated_scan_server::instance().settings.broker_client_listen_ep_;
+    const auto ep = authenticated_scan_server::instance().settings()->broker_client_listen_ep_;
     external_socket_->bind(ep);
     AU_LOG_INFO("CDCM broker is external active at %s", ep.c_str());
 }
@@ -117,9 +114,6 @@ void message_broker::service_dispatch(std::unique_ptr <zmsg> &&msg, const std::s
         workers_.update_last_worked(wrk->identity_, id);
     }
 }
-
-//  ---------------------------------------------------------------------
-//  Creates worker if necessary
 
 trustwave::sp_worker_t message_broker::worker_require(const std::string& identity)
 {
@@ -277,22 +271,20 @@ void message_broker::send_local_to_client(const trustwave::res_msg& result_messa
     }
 }
 
-void message_broker::client_process(const std::string& sender, std::unique_ptr <zmsg> &&msg)
-{
+void message_broker::client_process(const std::string &sender, std::unique_ptr<zmsg> &&msg) {
     assert(msg && msg->parts() >= 2);     //  Service name + body
 
     /*
      * 1. get body
      * 2. parse body
      * 3. for each action
-     *    if short
-     *        do internal
+     *    if found in local dispatcher
+     *        do loacally
      *    else
 
      *        create message , wrap sender and set single action as body
      *        dispatch message
      */
-    //fixme assaf update comment
     using namespace tao::json;
     std::string_view mstr(msg->body());
     trustwave::raw_msg unknown_actions_msg;
@@ -315,7 +307,7 @@ void message_broker::client_process(const std::string& sender, std::unique_ptr <
                 known_actions_msg.msgs.push_back(act_m);
 
             } else{
-                AU_LOG_ERROR("%s not found! perhaps a worker plugin", act_key.c_str());
+                AU_LOG_DEBUG("%s not found! perhaps a worker plugin", act_key.c_str());
                 unknown_actions_msg.msgs.push_back(action_obj);
             }
 
@@ -323,7 +315,14 @@ void message_broker::client_process(const std::string& sender, std::unique_ptr <
     }
     catch (std::exception &e) {
         AU_LOG_ERROR("Malformed message %s",e.what());
-        return;
+        trustwave::res_msg result_message;
+        result_message.hdr = unknown_actions_msg.hdr;
+        auto sess = trustwave::authenticated_scan_server::instance().get_session(result_message.hdr.session_id);
+        auto res = std::make_shared<trustwave::result_msg>();
+        result_message.msgs.push_back(res);
+        res->id("N/A");
+        res->res(std::string("Error: Malformed message ")+e.what());
+        send_local_to_client(result_message,sender, msg->unwrap());
     }
     AU_LOG_DEBUG("body : %s", msg->body());
     if (unknown_actions_msg.hdr.session_id != std::string("N/A")) {
@@ -352,8 +351,8 @@ void message_broker::handle_message(zmq::socket_t &socket,const std::string& exp
                 std::function <void(std::string, std::unique_ptr <zmsg>&&)> process_func)
 {
 
-    std::unique_ptr <zmsg> msg = std::make_unique <zmsg>(socket);
-    if (msg->parts() == 0){
+    std::unique_ptr <zmsg> msg = std::make_unique <zmsg>();
+    if (!msg->recv(socket) || msg->parts() == 0){
         AU_LOG_ERROR("empty message");
     }
     else{
@@ -376,7 +375,7 @@ void message_broker::handle_message(zmq::socket_t &socket,const std::string& exp
 void message_broker::broker_loop()
 {
     auto now = zmq_helpers::clock();
-    auto heartbeat_at = now + std::chrono::milliseconds(authenticated_scan_server::instance().settings.heartbeat_interval_);
+    auto heartbeat_at = now + std::chrono::milliseconds(authenticated_scan_server::instance().settings()->heartbeat_interval_);
     zmq::pollitem_t items[] = { { internal_socket_->operator void *(), 0, ZMQ_POLLIN, 0 }, {
                     external_socket_->operator void *(), 0, ZMQ_POLLIN, 0 } };
     while (!zmq_helpers::interrupted){
@@ -410,14 +409,14 @@ void message_broker::broker_loop()
                 worker_send(*it, const_cast <char*>( MDPW_HEARTBEAT), "", nullptr);
             }
 
-            heartbeat_at +=  std::chrono::milliseconds(authenticated_scan_server::instance().settings.heartbeat_interval_);
+            heartbeat_at +=  std::chrono::milliseconds(authenticated_scan_server::instance().settings()->heartbeat_interval_);
             now = zmq_helpers::clock();
         }
     }
 
 }
 
-void message_broker::th_func(zmq::context_t &ctx,boost::asio::io_context& ios)
+void message_broker::th_func(zmq::context_t &ctx,boost::asio::io_service& ios)
 {
     message_broker brk(ctx);
     brk.bind_internal();

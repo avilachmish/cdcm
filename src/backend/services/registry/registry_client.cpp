@@ -21,24 +21,26 @@
 extern "C" {
 #endif
 #include "auth/credentials/credentials.h"
-#ifdef __cplusplus
-}
-#endif
 #include "libcli/registry/util_reg.h"
 #include "lib/util/time.h"
+#ifdef __cplusplus
+}
+
+#endif
 #include <ctime>
 
 #include "session.hpp"
 #include "credentials.hpp"
-
+#include "singleton_runner/authenticated_scan_server.hpp"
 using namespace trustwave;
 
 registry_client::registry_client() :
         ctx_(nullptr), ev_ctx_(nullptr),data_blob_{} {
-    ctx_ = talloc_zero(nullptr, struct regshell_context);
+    this->init_conf(authenticated_scan_server::instance().service_conf_reppsitory);
+    ctx_ = talloc_zero(nullptr, struct reg_context);
 
     ev_ctx_ = s4_event_context_init(ctx_);
-    data_blob_ = data_blob_talloc_zero(nullptr, 1024 * 1024);//fixme assaf move to conf
+    data_blob_ = data_blob_talloc_zero(nullptr, conf_->data_blob_size);
 
 }
 
@@ -52,10 +54,10 @@ registry_client::~registry_client() {
 result registry_client::connect(const session &sess) {
 
         auto creds = ::cli_credentials_init(nullptr);
-    cli_credentials_set_domain(creds, sess.creds().domain_.c_str(), CRED_SPECIFIED);
-    cli_credentials_set_username(creds, sess.creds().username_.c_str(), CRED_SPECIFIED);
-    cli_credentials_set_password(creds, sess.creds().password_.c_str(), CRED_SPECIFIED);
-    cli_credentials_set_workstation(creds, sess.creds().workstation_.c_str(), CRED_SPECIFIED);
+    cli_credentials_set_domain(creds, sess.creds().domain().c_str(), CRED_SPECIFIED);
+    cli_credentials_set_username(creds, sess.creds().username().c_str(), CRED_SPECIFIED);
+    cli_credentials_set_password(creds, sess.creds().password().c_str(), CRED_SPECIFIED);
+    cli_credentials_set_workstation(creds, sess.creds().workstation().c_str(), CRED_SPECIFIED);
     WERROR error = reg_open_remote(nullptr, &ctx_->registry, nullptr, creds, ::loadparm_init_global(false),
                                    sess.remote().c_str(), ev_ctx_);
 

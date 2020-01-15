@@ -19,11 +19,13 @@
 //                          						Include files
 //=====================================================================================================================
 #include "settings.hpp"
-#include "../action.hpp"
-#include "../typedefs.hpp"
-#include "../dispatcher.hpp"
-#include "../Logger/include/Logger.h"
-#include "../sessions_cache/shared_mem_sessions_cache.hpp"
+#include "action.hpp"
+#include "configurable.hpp"
+#include "configuration.hpp"
+#include "typedefs.hpp"
+#include "dispatcher.hpp"
+#include "Logger/include/Logger.h"
+#include "sessions_cache/shared_mem_sessions_cache.hpp"
 
 //=====================================================================================================================
 //                          						namespaces
@@ -31,17 +33,21 @@
 
 namespace trustwave {
 
-struct authenticated_scan_server {
+class authenticated_scan_server final:public configurable<cdcm_settings> {
+public:
     std::unique_ptr <ILogger> logger_ptr;
-    Dispatcher <Action_Base> prv_dispatcher;
     Dispatcher <Action_Base> public_dispatcher;
+    Dispatcher <configuration> service_conf_reppsitory;
     boost::shared_ptr <shared_mem_sessions_cache> sessions;
-    cdcm_settings settings;
+    virtual ~authenticated_scan_server()=default;
     authenticated_scan_server(const authenticated_scan_server&) = delete;
     authenticated_scan_server& operator=(const authenticated_scan_server &) = delete;
     authenticated_scan_server(authenticated_scan_server &&) = delete;
     authenticated_scan_server & operator=(authenticated_scan_server &&) = delete;
-
+    std::shared_ptr<cdcm_settings> settings()
+    {
+        return conf_;
+    }
     static auto& instance()
     {
         static authenticated_scan_server app;

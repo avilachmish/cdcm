@@ -30,9 +30,11 @@ extern "C" {
 }
 #endif
 #undef uint_t
-
+#undef strcpy
 #include "singleton_runner/authenticated_scan_server.hpp"
 #include "session.hpp"
+#include <taocpp-json/include/tao/json.hpp>
+#include <taocpp-json/include/tao/json/contrib/traits.hpp>
 /**@ingroup callback
  * Authentication callback function type (traditional method)
  *
@@ -76,13 +78,20 @@ static void smbc_auth_fn(const char *pServer, const char *, char *pWorkgroup, in
             std::string(pServer));
     //  AU_LOG_DEBUG("server is %s ", pServer);
     static int krb5_set = 1;
-   // const char *wg = "CDCM";
+    const char *wg = "WORKGROUP";
     if (!sess->id().is_nil()) {
 
         AU_LOG_INFO("smbc_auth_fn session for %s found", pServer);
-        strncpy(pWorkgroup, sess->creds().domain_.c_str(),  static_cast<size_t>(maxLenWorkgroup - 1));
-        strncpy(pUsername, sess->creds().username_.c_str(), static_cast<size_t>(maxLenUsername - 1));
-        strncpy(pPassword, sess->creds().password_.c_str(), static_cast<size_t>(maxLenPassword - 1));
+
+        if(sess->creds().username().empty())
+        {
+            strncpy(pWorkgroup, wg, static_cast<size_t>(maxLenWorkgroup - 1));
+        } else {
+            strncpy(pWorkgroup, sess->creds().domain().c_str(), static_cast<size_t>(maxLenWorkgroup - 1));
+        }
+
+        strncpy(pUsername, sess->creds().username().c_str(), static_cast<size_t>(maxLenUsername - 1));
+        strncpy(pPassword, sess->creds().password().c_str(), static_cast<size_t>(maxLenPassword - 1));
         AU_LOG_INFO("smbc_auth_fn session for %s found and set", pServer);
         return;
     }
@@ -243,7 +252,6 @@ bool smb_client::download(const char *base, const char *name, bool resume,
     close(local_fd_);
     return true;
 }
-static constexpr off_t max_mem_segment=512*1024*1024;//fixme assaf make it configurable
 
 bool smb_client::download_portion(off_t curpos, off_t count, bool to_file)
 {
@@ -276,7 +284,7 @@ bool smb_client::download_portion(off_t curpos, off_t count, bool to_file)
                          "offset %jd", bytesread, current_open_path_.data(), (intmax_t) curpos);
             delete[] readbuf;
             smbc_close(remote_fd_);
-            if (local_fd_ != STDOUT_FILENO) {//fixme assaf change condition to -1
+            if (local_fd_ != -1) {
                 close(local_fd_);
             }
             return false;
@@ -288,7 +296,7 @@ bool smb_client::download_portion(off_t curpos, off_t count, bool to_file)
     close(local_fd_);
     return true;
 }
-bool smb_client::download_portion_to_memory(const char *base, const char *name,off_t offset = 0, off_t count=max_mem_segment)
+bool smb_client::download_portion_to_memory(const char *base, const char *name,off_t offset = 0, off_t count=0)
 {
     char path[SMB_MAXPATHLEN];
     snprintf(path, SMB_MAXPATHLEN - 1, "%s%s%s", base,
@@ -304,9 +312,10 @@ bool smb_client::download_portion_to_memory(const char *base, const char *name,o
         return false;
     }
     return download_portion(off, off + count, false);
-
-
-
+}
+bool smb_client::download_portion_to_memory(const char *base, const char *name,off_t offset = 0)
+{
+    return download_portion_to_memory(base,name,offset,conf_->max_mem_segment);
 }
 bool smb_client::list(const std::string &path,std::vector<trustwave::dirent> &dirents) {
     int dh1, dsize, dirc;
@@ -363,7 +372,6 @@ ssize_t smb_client::read(size_t offset, size_t size, char *dest)
             return -1;
         }
         curpos += bytesread;
-        //AU_LOG_ERROR("%zu",curpos); //rotem TODO: can be removed?
     }
     return curpos;
 }
@@ -371,6 +379,7 @@ uintmax_t smb_client::file_size() const
 {
     return static_cast<uintmax_t>(remotestat_.st_size);
 }
+
 time_t smb_client::last_modified() const
 {
     return remotestat_.st_mtim.tv_sec;
@@ -378,4 +387,8 @@ time_t smb_client::last_modified() const
 bool smb_client::validate_open()
 {
     return connect(current_open_path_.data()).first;
+}
+smb_client::smb_client()
+{
+    this->init_conf(authenticated_scan_server::instance().service_conf_reppsitory);
 }
