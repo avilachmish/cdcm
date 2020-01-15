@@ -33,7 +33,7 @@ std::tuple<bool, std::string> wmi_client::connect(const session& session, std::s
     std::string domain_usr_pass_arg;
     constexpr size_t domain_usr_pass_arg_size = 512;
     domain_usr_pass_arg.reserve(domain_usr_pass_arg_size);
-    domain_usr_pass_arg.append(((credentials.domain_))).append("/").append(credentials.username_).append("%").append(credentials.password_);
+    domain_usr_pass_arg.append(((credentials.domain()))).append("/").append(credentials.username()).append("%").append(credentials.password());
 
     std::string remote_asset_arg;
     constexpr size_t remote_asset_arg_size = 256;
