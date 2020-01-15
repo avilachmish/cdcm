@@ -6,6 +6,7 @@
 
 #include <tuple>
 #include <string>
+#include <chrono> //rotem added to delete
 #include <boost/tokenizer.hpp>
 
 #include "../wmi_client.hpp"
