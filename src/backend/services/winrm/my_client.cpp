@@ -13,22 +13,26 @@
 //=====================================================================================================================
 //                          						Include files
 //=====================================================================================================================
-#include <OpenWsmanClient.h>
 #include <iostream>
 #include <vector>
+#include "OpenWsmanClient.h"
 int main()
 {
-    WsmanClientNamespace::OpenWsmanClient cli("192.168.120.233",5985,"/wsman","http","Basic","administrator","Finjan123");
+    trustwave::OpenWsmanClient cli("192.168.120.237",5985,"/wsman","http","Basic","assaf","Finjan123");
     cli.Identify();
-    NameValuePairs nvp={{"Name","winmgmt"}};
-
+    const trustwave::NameValuePairs nvp={{"IpEnabled","TRUE"}};
+/*
     const std::string r{"http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service"};
-    std::cerr << cli.Get(r,addressof(nvp));
+    std::cerr << cli.Get(r,std::addressof(nvp));
     const std::string r2{"http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem"};
 
     std::cerr << "1,\n";
+  */
+
+    const std::string r2{"http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*"};
     std::vector<std::string> res2;
-    cli.Enumerate(r,res2);
+    trustwave::WsmanFilter filt("http://schemas.microsoft.com/wbem/wsman/1/WQL","SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IpEnabled=TRUE");
+    cli.Enumerate(r2,filt,res2);
     for(const auto e : res2)
     {
         std::cerr << e <<", ";
