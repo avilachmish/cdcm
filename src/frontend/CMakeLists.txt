@@ -8,7 +8,6 @@ set(SOURCE_FILES
 		maintenance.cpp)
 add_executable(cdcm_broker ${SOURCE_FILES})
 add_subdirectory(actions)
-
 target_link_libraries(cdcm_broker
 						pthread 
 						zmq
