@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(standard)
             if(boost::regex_search(line, what, re)) {
                 std::cerr << "Test: '" << what[action_name] << "' of session: '"
                           << what[session_name] << "' with reason: '"
-                          << what[reason] << "'");
+                          << what[reason] << "'";
                 BOOST_TEST(what[result] == "passed", "Test: '" << what[action_name] << "' of session: '"
                                                                << what[session_name] << "' with reason: '"
                                                                << what[reason] << "'");
