@@ -55,6 +55,7 @@ BOOST_AUTO_TEST_CASE(standard)
             boost::regex_token_iterator<std::string::iterator> it(line.begin(), line.end(), re, subs);
             boost::regex_token_iterator<std::string::iterator> end;
             boost::smatch what;
+            std::cerr << line << std::endl;
             if(boost::regex_search(line, what, re)) {
                 std::cerr << "Test: '" << what[action_name] << "' of session: '"
                           << what[session_name] << "' with reason: '"
