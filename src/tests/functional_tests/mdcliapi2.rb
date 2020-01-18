@@ -16,7 +16,7 @@ include REXML
 require 'singleton'
 require "logger"
 require 'timeout'
-require 'myLogger.rb'
+require_relative 'myLogger.rb'
 require 'results_verification.rb'
 def log
     MyLogger.instance.log

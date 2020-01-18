@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'myLogger.rb'
+require_relative 'myLogger.rb'
 require 'mdcliapi2'
 require 'results_verification.rb'
 
