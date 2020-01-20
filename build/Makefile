@@ -31,6 +31,7 @@ TAR_CMD		:= tar --numeric-owner -zcf
 SAMBA		:= samba-4.10.6
 LIBPE_PEV	:= libpe
 TAOCPP_JSON	:= taocpp-json
+OPENWSMAN   := openwsman
 
 default goal: help
 
@@ -79,7 +80,7 @@ deps: pre $(TOP)/deps/.done
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
-$(TOP)/deps/.done: $(TOP)/deps/$(TAOCPP_JSON)/.done $(TOP)/deps/$(LIBPE_PEV)/.done $(TOP)/deps/$(SAMBA)/.done
+$(TOP)/deps/.done: $(TOP)/deps/$(TAOCPP_JSON)/.done $(TOP)/deps/$(LIBPE_PEV)/.done $(TOP)/deps/$(SAMBA)/.done $(TOP)/deps/$(OPENWSMAN)/.done
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
@@ -102,6 +103,15 @@ $(TOP)/deps/$(LIBPE_PEV)/.done: $(TOP)/tars/$(LIBPE_PEV).tar
 	touch $(TOP)/deps/$(LIBPE_PEV)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
+$(TOP)/deps/$(OPENWSMAN)/.done: $(TOP)/tars/$(OPENWSMAN).tar
+	@echo "* run $@ `date +%F.%H:%M:%S`"
+	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(OPENWSMAN);fi
+	tar -xvf $(TOP)/tars/$(OPENWSMAN).tar -C $(TOP)/deps/
+	-mkdir -p $(TOP)/deps/$(OPENWSMAN)/build
+	(cd $(TOP)/deps/$(OPENWSMAN)/build; cmake3 -G "Unix Makefiles" ..)
+	(cd $(TOP)/deps/$(OPENWSMAN)/build; make)
+	touch $(TOP)/deps/$(OPENWSMAN)/.done
+	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
 $(TOP)/deps/$(SAMBA)/.done: $(TOP)/tars/$(SAMBA).tar
 	@echo "* run $@ `date +%F.%H:%M:%S`"

@@ -15,7 +15,7 @@
 #include "zmq_message.hpp"
 #include <algorithm> // for copy
 #include <cassert> // for assert
-#include <cstring> // for memcpy, size_t, strlen, NULL
+#include <cstring> // for memcpy, size_t, strlen, nullptr
 #include <functional> // for function
 #include <iomanip> // for operator<<, setfill, setw
 #include <iostream> // for operator<<, basic_ostream, basic_ostre...

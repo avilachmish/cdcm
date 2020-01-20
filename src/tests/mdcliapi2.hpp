@@ -103,7 +103,7 @@ public:
     }
 
     //  ---------------------------------------------------------------------
-    //  Returns the reply message or NULL if there was no reply. Does not
+    //  Returns the reply message or nullptr if there was no reply. Does not
     //  attempt to recover from a broker failure, this is not possible
     //  without storing all unanswered requests and resending them all...
 
