@@ -87,7 +87,8 @@ build_rpms:
 
 test_install:
   stage: test_install
-  image: git.trustwave.com:4567/engineering/credentialed_data_collection_module
+  tags:
+    - cdcm_install
   script:
     - echo "will install rpm's and test"
     - cd build
