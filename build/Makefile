@@ -109,7 +109,7 @@ $(TOP)/deps/$(OPENWSMAN)/.done: $(TOP)/tars/$(OPENWSMAN).tar
 	tar -xvf $(TOP)/tars/$(OPENWSMAN).tar -C $(TOP)/deps/
 	-mkdir -p $(TOP)/deps/$(OPENWSMAN)/build
 	(cd $(TOP)/deps/$(OPENWSMAN)/build; cmake3 -G "Unix Makefiles" ..)
-	(cd $(TOP)/deps/$(OPENWSMAN)/build; make)
+	(cd $(TOP)/deps/$(OPENWSMAN)/build; make install)
 	touch $(TOP)/deps/$(OPENWSMAN)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
