@@ -107,7 +107,7 @@ $(TOP)/deps/$(TAOCPP_JSON)/.done: $(TOP)/tars/$(TAOCPP_JSON).tar
 	touch $(TOP)/deps/$(TAOCPP_JSON)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
-$(TOP)/deps/$(OPENVAS_SMB)/.done: $(TOP)/deps/$(HEIMDAL)/.done $(TOP)/tars/$(OPENVAS_SMB).tar
+$(TOP)/deps/$(OPENVAS_SMB)/.done: $(TOP)/tars/$(OPENVAS_SMB).tar
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(OPENVAS_SMB);fi
 	tar -xvf $(TOP)/tars/$(OPENVAS_SMB).tar -C $(TOP)/deps/
