@@ -27,7 +27,7 @@
 //=====================================================================================================================
 namespace trustwave {
     struct smb_file_exists_msg: public single_param_action_msg {
-        static constexpr std::string_view act_name{"file_exists"};
+        static constexpr std::string_view act_name{"file_exists"}; //rotem: why to define string_view?
 
         smb_file_exists_msg(): single_param_action_msg(act_name) {}
 

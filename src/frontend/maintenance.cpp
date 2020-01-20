@@ -27,7 +27,7 @@ maintenance::maintenance(boost::asio::io_service& ios):
 
 void maintenance::maintenance_function()
 {
-    static const auto uuid_str_len = boost::uuids::to_string(boost::uuids::random_generator()()).length();
+    static const auto uuid_str_len = boost::uuids::to_string(boost::uuids::random_generator()()).length(); //rotem todo: can't be constexpr? ask assaf
     authenticated_scan_server::instance().sessions->clean();
     auto session_list = authenticated_scan_server::instance().sessions->get_sessions_id_list();
     for(const auto& entry: boost::filesystem::directory_iterator(

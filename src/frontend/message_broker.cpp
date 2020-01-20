@@ -144,9 +144,12 @@ void message_broker::worker_delete(trustwave::sp_worker_t wrk, bool send_disconn
 
 void message_broker::worker_process(const std::string& sender, std::unique_ptr<zmsg>&& msg)
 {
+
     assert(msg && msg->parts() >= 1); //  At least, command
+    std::cout << "worker dump at start" << std::endl; //rotem to delete
     workers_.dump(); //rotem enabled, to comment when done debugging
     std::string command = reinterpret_cast<const char*>(msg->pop_front().c_str());
+    std::cout << "rotem in broker, got command: " << std::string(mdps_commands[(int)*command.c_str()]) << std::endl; //rotem to delete
     bool worker_ready = workers_.exists(sender);
     auto wrk = worker_require(sender);
     if(command.compare(MDPW_READY) == 0) {
@@ -194,6 +197,7 @@ void message_broker::worker_process(const std::string& sender, std::unique_ptr<z
             }
         }
     }
+    std::cout << "worker dump at end" << std::endl; //rotem to delete
     workers_.dump(); //rotem enabled, to comment when done debugging
 }
 

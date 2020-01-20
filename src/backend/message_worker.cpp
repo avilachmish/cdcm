@@ -214,13 +214,13 @@ int message_worker::worker_loop()
                     AU_LOG_DEBUG("%s not found", act_key.c_str());
                     // try extract id from malformed message
                     try {
-                        auto e = action_msg_obj.cbegin()->second.at("id").template as<std::string>();
+                        auto e = action_msg_obj.cbegin()->second.at("id").template as<std::string>(); //rotem TODO: understand the syntax
                         action_result->id(e);
                     }
                     catch(...) {
                         action_result->id("unknown");
                     }
-                    action_result->res("Error: Malformed message - " + tao::json::to_string(action_message));
+                    action_result->res("Error: Malformed message - " + tao::json::to_string(action_message)); //rotem TODO: return the malformed message is redundent since we have the request id. to delete?
                     result.msgs.push_back(action_result);
                 }
             }
