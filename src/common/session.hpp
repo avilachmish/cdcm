@@ -26,6 +26,7 @@ namespace trustwave {
 
     enum cdcm_client_type {
         REGISTRY_CLIENT = 0,
+        WMI_CLIENT,
         //  SMB_CLIENT,//Irreleavant
         CLIENTS_COUNT
     };
