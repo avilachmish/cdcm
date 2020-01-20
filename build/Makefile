@@ -89,7 +89,7 @@ $(TOP)/deps/$(HEIMDAL)/.done: $(TOP)/tars/$(HEIMDAL).tar
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(HEIMDAL);fi
 	tar -xvf $(TOP)/tars/$(HEIMDAL).tar -C $(TOP)/deps/
-	(chown -R 777 $(TOP)/deps/$(HEIMDAL))
+	(chown -R 777 $(TOP)/deps/$(HEIMDAL); ls -la ; whoami)
 	(cd $(TOP)/deps/$(HEIMDAL); ./autogen.sh)
 	(cd $(TOP)/deps/$(HEIMDAL); ./configure)
 	(cd $(TOP)/deps/$(HEIMDAL); make)
