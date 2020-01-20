@@ -89,10 +89,10 @@ $(TOP)/deps/$(HEIMDAL)/.done: $(TOP)/tars/$(HEIMDAL).tar
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(HEIMDAL);fi
 	tar -xvf $(TOP)/tars/$(HEIMDAL).tar -C $(TOP)/deps/
-	(cd $(TOP)/deps/$(HEIMDAL)/build; ./autogen.sh)
-	(cd $(TOP)/deps/$(HEIMDAL)/build; ./configure)
-	(cd $(TOP)/deps/$(HEIMDAL)/build; make)
-	(cd $(TOP)/deps/$(HEIMDAL)/build; make install)
+	(cd $(TOP)/deps/$(HEIMDAL); ./autogen.sh)
+	(cd $(TOP)/deps/$(HEIMDAL); ./configure)
+	(cd $(TOP)/deps/$(HEIMDAL); make)
+	(cd $(TOP)/deps/$(HEIMDAL); make install)
 	touch $(TOP)/deps/$(HEIMDAL)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
