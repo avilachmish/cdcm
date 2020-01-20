@@ -8,6 +8,7 @@ stages:
   - build
   - test
   - build_rpms
+  - test_install
   - deploy
 
 before_script:
@@ -23,6 +24,11 @@ build_deps:
   script:
     - cd build
     - scl enable devtoolset-8 'make deps'
+  rules:
+    - changes:
+        - build/Makefile
+        - tars/*
+        - .gitlab-ci.yml
   cache:
     key: "$CI_COMMIT_REF_SLUG"
     paths:
@@ -42,6 +48,10 @@ build:
     - scl enable devtoolset-8 "cmake3 .."
     - scl enable devtoolset-8 "make -j4"
     - scl enable devtoolset-8 "make install"
+  rules:
+    - changes:
+        - src
+        - .gitlab-ci.yml
   artifacts:
     paths:
       - build_cdcm/
@@ -57,19 +67,20 @@ test:
   stage: test
   script:
     - cd build_cdcm/src/tests/
-    - echo "one two ..."
-    - echo $REPORT_FNAME
-    - ./tests_run --log_sink=$REPORT_FNAME --log_format=JUNIT --log_level=all --report_level=no -- --assets_path "$PWD/assets"
-    - ls
-    - ls -la
-    - pwd
+    - ./tests_run  --log_sink=$REPORT_FNAME  --log_format=JUNIT  --log_level=all
+  rules:
+    - changes:
+        - src
+        - .gitlab-ci.yml
   artifacts:
+    when: always
     paths:
       - build_cdcm/src/tests/$REPORT_FNAME
     reports:
       junit: build_cdcm/src/tests/$REPORT_FNAME
   tags:
     - cdcm
+
 
 build_rpms:
   stage: build_rpms
@@ -88,6 +99,15 @@ build_rpms:
     policy: pull
   tags:
     - cdcm
+
+test_install:
+  stage: test_install
+  tags:
+    - cdcm_install
+  script:
+    - echo "will install rpm's and test"
+    - cd build
+    - yum localinstall -y RPMS/x86_64/*.rpm
 
 deploy_release:
   stage: deploy
