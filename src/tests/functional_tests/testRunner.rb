@@ -44,7 +44,7 @@ class Test_Runner
                 end
             }
         }
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"run " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother\/error [" + num_other.to_s + "]"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"run " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother\/error [" + num_other.to_s + "]"}
         puts "===================================\nrun " + total_num_of_session_items.to_s + " session items. \npassed [" + num_passed.to_s + "] \nfailed [" + num_failed.to_s + "] \nother\/error [" + num_other.to_s + "]\n==================================="
 
     end
@@ -52,22 +52,22 @@ class Test_Runner
     #
     ########################################
     def run_test_from_file(path)
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"\n\n\nstart of run_test_from_file"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"\n\n\nstart of run_test_from_file"}
         load_sessions_from_xml_file(path)
         @client.load_sessions(@sessions)
         #run all sessions
         @client.execute_sessions_sequentially
         sumerize_results
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"=========================Done running all sessions. results dump: ========================="}
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {@client.dump}
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"end of run_test_from_file"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"=========================Done running all sessions. results dump: ========================="}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {@client.dump}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"end of run_test_from_file"}
     end
 
     ########################################
     # map between action name and action params (array of strings)
     ########################################
     def read_actions root_element
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"reading actions from xml"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reading actions from xml"}
         root_element.elements.each("actions/action") {
             |action|
             name = action.attributes["name"]
@@ -81,7 +81,7 @@ class Test_Runner
     # map between vm_name and vm_params (array of strings)
     ########################################
     def read_verification_methods root_element
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"reading verification methods from xml"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reading verification methods from xml"}
         root_element.elements.each("verification_methods/verification_method") {
             |verification_method|
             name = verification_method.attributes["vm_name"]
@@ -95,7 +95,7 @@ class Test_Runner
     # map between asset name and asset_details
     ########################################
     def read_assets root_element
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"reading assets from xml"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reading assets from xml"}
         root_element.elements.each("assets/asset") {
             |asset|
             name = asset.attributes["name"]
@@ -112,7 +112,7 @@ class Test_Runner
     #
     ########################################
     def read_cdcm_client_settings root_element
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"reading cdcm_citent_settings from xml"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reading cdcm_citent_settings from xml"}
         root_element.elements.each("cdcm_client_settings") {
             |cdcm_client_settings|
             timeout = cdcm_client_settings.attributes["response_timeout"]
@@ -130,15 +130,15 @@ class Test_Runner
     def load_sessions_from_xml_file(path)
         xmlfile = File.new(path)
         xmldoc = Document.new(xmlfile)
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"xml opened: " + path}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"xml opened: " + path}
 
         root_element = xmldoc.root()
         read_cdcm_client_settings(root_element)
         if (! @response_timeout.nil?)
-            log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"setting timeout of: " + @response_timeout.to_s + " seconds"}
+            log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"setting timeout of: " + @response_timeout.to_s + " seconds"}
             @client.set_resp_timeout(@response_timeout)
         else
-            log.error ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"error reading response timeout. will not set client timeout"}
+            log.error ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"error reading response timeout. will not set client timeout"}
         end
 
         # read actions snippet
