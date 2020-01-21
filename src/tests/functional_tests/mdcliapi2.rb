@@ -16,7 +16,7 @@ include REXML
 require 'singleton'
 require "logger"
 require 'timeout'
-require_relative 'myLogger.rb'
+require 'myLogger.rb'
 require 'results_verification.rb'
 def log
     MyLogger.instance.log
@@ -76,21 +76,22 @@ class MajorDomoClient
       }
       rescue
           puts "reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"
-          log.info ("#{self.class.name}::#{__callee__}") {"reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"}
-          raise Timeout::Error
+          log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"}
+          #raise Timeout::Error
       end
       messages.shift # empty
 
       # header
       if messages.shift != MDP::C_CLIENT
-        raise RuntimeError, "Not a valid MDP message"
+        #raise RuntimeError, "Not a valid MDP message"
       end
 
       messages.shift # service
       return messages
     end
 
-    nil
+    #nil
+    return  "ERROR: malformed request"
   end
 
   ########################################
@@ -124,26 +125,27 @@ class MajorDomoClient
   ########################################
   def start_session(session)
 
-    log.info ("#{self.class.name}::#{__callee__}") {"starting session"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"starting session"}
 
     if session.session_items[0].action != "start_session"
-        log.error ("#{self.class.name}::#{__callee__}") {"first session_item is not start_session!!! add start_session item as first request for session: " + session.session_name}
+        log.error ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"first session_item is not start_session!!! add start_session item as first request for session: " + session.session_name}
         return
     end
     start_session_str = Message_Formater.instance.start_session_str(session)
-    log.info ("#{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
     session.session_items[0].req_msg = start_session_str
     send("echo", start_session_str)
 
     reply = recv()
-    log.info ("#{self.class.name}::#{__callee__}") {"recieved: \n" + reply[0]}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved: \n" + (reply[0].nil? ? "nil" : reply[0])}
+    #log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved: \n" + reply[0]}
     reply_json = JSON.parse(reply[0])
     session.session_items[0].resp_msg = reply_json.to_json.to_s
 
-    log.info ("#{self.class.name}::#{__callee__}") {"will verify results"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"will verify results"}
     res = @verifier.verify(session.session_items[0])
     short_dump =  short_after_run_dump(session, session.session_items[0])
-    puts short_dump  
+    puts short_dump
     # the "res" holds the session_id, determained and received by the broker
     session_id = reply_json['msgs'][0]['res'] #works with trustwave's broker + worker
     #session_id = reply_json['H']['session_id'] # works with zmq ruby broker + worker
@@ -154,19 +156,25 @@ class MajorDomoClient
   #  send a single action to the broker and wait to the response.
   ########################################
   def execute_session_item(session, session_item)
-    log.info ("#{self.class.name}::#{__callee__}") {"executing session item: \n" + session_item.dump_before_reply}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"executing session item: \n" + session_item.dump_before_reply}
     action_str = Message_Formater.instance.action_str(session, session_item)
-    log.info ("#{self.class.name}::#{__callee__}") {"sending: \n" + action_str}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + action_str}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"rotem finish sending \n" } #rotem to delete
     session_item.req_msg = action_str
     send("echo", action_str)
 
     reply = recv()
-    log.info ("#{self.class.name}::#{__callee__}") {"recieved: \n" + reply[0]}
-    reply_json = JSON.parse(reply[0])
-    session_item.resp_msg =  reply_json.to_json.to_s
+    if (reply[0].nil? || reply[0].empty? )
+        log.error ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved empty response"}
+        @verifier.set_failed_verification(session_item)
+    else
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved: \n" + reply[0]}
+        reply_json = JSON.parse(reply[0])
+        session_item.resp_msg =  reply_json.to_json.to_s
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"will verify results"}
+        res = @verifier.verify(session_item)
+    end
 
-    log.info ("#{self.class.name}::#{__callee__}") {"will verify results"}
-    res = @verifier.verify(session_item)
 
     short_dump =  short_after_run_dump(session, session_item)
     puts short_dump
@@ -225,7 +233,7 @@ class MajorDomoClient
   #
   ########################################
   def short_after_run_dump (session, session_item)
-      dump_str = "result:" + session_item.verification_ctx.vm_result + " ip:" + session.asset_details.remote + " action_name:" + session_item.action + " session_name:" + session.session_name + " req_id:" + session_item.req_id + " reason:[" + session_item.verification_ctx.verification_result.vm_result_message + "]\n"
+      dump_str = "result:" + session_item.verification_ctx.vm_result + " ip:" + session.asset_details.remote + " action_name:" + session_item.action + " session_name:" + session.session_name + " req_id:" + session_item.req_id + " reason:" + session_item.verification_ctx.verification_result.vm_result_message + "\n"
       return dump_str
   end
 
@@ -274,15 +282,15 @@ class Session
     ########################################
     def remove_session_item(required_req_id)
       res = @session_items.delete_if { |item| item.req_id ==  required_req_id}
-      log.info ("#{self.class.name}::#{__callee__}") {"new session item removed. total " + @session_items.size.to_s + " session item in this session"}
+      log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"new session item removed. total " + @session_items.size.to_s + " session item in this session"}
     end
 
     ########################################
-    # dump the session details
+     # dump the session details
     ########################################
     def dump
 
-     #log.info ("#{self.class.name}::#{__callee__}") {dump_str}
+     #log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {dump_str}
       dump_str = "\n==========================\n"
       dump_str += "Session Dump\n"
       dump_str += "session_id: " + @session_id + "\n"
@@ -399,11 +407,11 @@ class Message_Formater
     # return the request boby for general action formatted as json
     ########################################
     def action_str(session, session_item)
-
         action_str = '{"H": {"session_id":"' + session.session_id + '"}, "msgs":[ { "' + session_item.action + '" : { "id" : "' + session_item.req_id + '"'
         session_item.action_params.each {
             |param_pair|
-            sub_str = ', "' + param_pair[0] + '" : "' + param_pair[1] + '" '
+            # if the param value is empty (valid use case, for example pattern value is empty for )
+            sub_str = ', "' + param_pair[0] + '" : "' + (param_pair[1].nil? ? "" : param_pair[1]) + '" '
             action_str +=  sub_str
         }
         action_str += '} } ]}'
