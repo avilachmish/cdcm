@@ -12,9 +12,9 @@ class MyLogger
         log_file = File.open("/var/cdcm/logs/cdcm_client#{$client_id}.log", File::WRONLY | File::CREAT | File::TRUNC)
         log_file.sync = true
         @logger = Logger.new( log_file )
-        @logger.datetime_format = '%d--%m-%Y %H:%M:%S '
+        @logger.datetime_format = '%d-%m-%Y %H:%M:%S::%3N'
         @logger.formatter = proc do |severity, datetime, progname, msg|
-           "[#{severity}] [#{datetime}] [#{progname}]: #{msg}\n"
+           "[#{severity}] [#{datetime.strftime(@logger.datetime_format)}] [#{progname}]: #{msg}\n"
 
         end
     end
