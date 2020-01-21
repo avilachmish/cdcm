@@ -76,7 +76,7 @@ class MajorDomoClient
       }
       rescue
           puts "reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"
-          log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"}
+          log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"}
           #raise Timeout::Error
       end
       messages.shift # empty
@@ -125,24 +125,24 @@ class MajorDomoClient
   ########################################
   def start_session(session)
 
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"starting session"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"starting session"}
 
     if session.session_items[0].action != "start_session"
-        log.error ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"first session_item is not start_session!!! add start_session item as first request for session: " + session.session_name}
+        log.error ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"first session_item is not start_session!!! add start_session item as first request for session: " + session.session_name}
         return
     end
     start_session_str = Message_Formater.instance.start_session_str(session)
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"sending: \n" + start_session_str}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
     session.session_items[0].req_msg = start_session_str
     send("echo", start_session_str)
 
     reply = recv()
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"recieved: \n" + (reply[0].nil? ? "nil" : reply[0])}
-    #log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"recieved: \n" + reply[0]}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved: \n" + (reply[0].nil? ? "nil" : reply[0])}
+    #log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved: \n" + reply[0]}
     reply_json = JSON.parse(reply[0])
     session.session_items[0].resp_msg = reply_json.to_json.to_s
 
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"will verify results"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"will verify results"}
     res = @verifier.verify(session.session_items[0])
     short_dump =  short_after_run_dump(session, session.session_items[0])
     puts short_dump
@@ -156,22 +156,22 @@ class MajorDomoClient
   #  send a single action to the broker and wait to the response.
   ########################################
   def execute_session_item(session, session_item)
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"executing session item: \n" + session_item.dump_before_reply}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"executing session item: \n" + session_item.dump_before_reply}
     action_str = Message_Formater.instance.action_str(session, session_item)
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"sending: \n" + action_str}
-    log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"rotem finish sending \n" } #rotem to delete
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + action_str}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"rotem finish sending \n" } #rotem to delete
     session_item.req_msg = action_str
     send("echo", action_str)
 
     reply = recv()
     if (reply[0].nil? || reply[0].empty? )
-        log.error ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"recieved empty response"}
+        log.error ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved empty response"}
         @verifier.set_failed_verification(session_item)
     else
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"recieved: \n" + reply[0]}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved: \n" + reply[0]}
         reply_json = JSON.parse(reply[0])
         session_item.resp_msg =  reply_json.to_json.to_s
-        log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"will verify results"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"will verify results"}
         res = @verifier.verify(session_item)
     end
 
@@ -282,7 +282,7 @@ class Session
     ########################################
     def remove_session_item(required_req_id)
       res = @session_items.delete_if { |item| item.req_id ==  required_req_id}
-      log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {"new session item removed. total " + @session_items.size.to_s + " session item in this session"}
+      log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"new session item removed. total " + @session_items.size.to_s + " session item in this session"}
     end
 
     ########################################
@@ -290,7 +290,7 @@ class Session
     ########################################
     def dump
 
-     #log.info ("#{self.class.name}::#{__callee__}::#{__LINE__}") {dump_str}
+     #log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {dump_str}
       dump_str = "\n==========================\n"
       dump_str += "Session Dump\n"
       dump_str += "session_id: " + @session_id + "\n"
