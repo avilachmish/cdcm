@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
+enable_testing()
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -14,8 +16,12 @@ function(enable_cxx_compiler_flag_if_supported flag)
         unset(flag_supported CACHE)
     endif ()
 endfunction()
-include(CodeCoverage.cmake)
-APPEND_COVERAGE_COMPILER_FLAGS()
+option(BUILD_DEV "Build project with coverage and testing compiler flags." OFF)
+if(BUILD_DEV)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+    include(CodeCoverage.cmake)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
 enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 #enable_cxx_compiler_flag_if_supported("-Werror")
@@ -59,7 +65,6 @@ message(STATUS "${BOOST_LIBRARYDIR}")
 link_directories(${BOOST_LIBRARYDIR})
 include_directories(${DEPS_DIR})
 include_directories(common)
-add_definitions(-DCMAKE_BUILD_TYPE=Debug)
 link_directories(${DEPS_DIR}/libpe-pev/build)
 
 set(bin_dest "bin")
@@ -77,6 +82,4 @@ configure_file(../cdcm_settings.json /var/cdcm/conf/cdcm_settings.json COPYONLY)
 configure_file(../Logger/module.xml /var/cdcm/conf/Logger/module.xml COPYONLY)
 
 install(FILES ../scripts/cdcm.sh DESTINATION ${release_bin_dest})
-
-
 
