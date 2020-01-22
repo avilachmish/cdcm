@@ -30,15 +30,13 @@ namespace trustwave {
         static constexpr std::string_view act_name{"winrm_enumerate"};
         winrm_action_enumerate_msg(): action_msg(act_name) {}
         std::string uri_;
-        std::string filter_;
     };
 } // namespace trustwave
 namespace tao::json {
     template<>
     struct traits<trustwave::winrm_action_enumerate_msg>:
         binding::object<binding::inherit<traits<trustwave::action_msg>>,
-                        TAO_JSON_BIND_REQUIRED("uri", &trustwave::winrm_action_enumerate_msg::uri_),
-                        TAO_JSON_BIND_REQUIRED("filter", &trustwave::winrm_action_enumerate_msg::filter_)> {
+                        TAO_JSON_BIND_REQUIRED("uri", &trustwave::winrm_action_enumerate_msg::uri_)> {
         TAO_JSON_DEFAULT_KEY(trustwave::winrm_action_enumerate_msg::act_name.data());
 
         template<template<typename...> class Traits>
@@ -48,7 +46,6 @@ namespace tao::json {
             const auto o = v.at(trustwave::winrm_action_enumerate_msg::act_name);
             result.id_ = o.at("id").template as<std::string>();
             result.uri_ = o.at("uri").template as<std::string>();
-            result.uri_ = o.at("filter").template as<std::string>();
             return result;
         }
     };
