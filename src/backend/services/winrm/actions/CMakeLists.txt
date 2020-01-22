@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 
 set(LD_ACTION_LIBS -s wsman_clientpp wsman wsman_client wsman_curl_client_transport xml2 curl ssl crypto pthread dl)
-set(ACTION_NAMES enumerate)
+set(ACTION_NAMES enumerate identify get)
 #get
 foreach (X IN ITEMS ${ACTION_NAMES})
     message(STATUS "Building ${X} action")

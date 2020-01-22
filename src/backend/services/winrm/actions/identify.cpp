@@ -1,6 +1,6 @@
 //=====================================================================================================================
 // Trustwave ltd. @{SRCH}
-//														enumerate.cpp
+//														identify.cpp
 //
 //---------------------------------------------------------------------------------------------------------------------
 // DESCRIPTION:
@@ -8,19 +8,19 @@
 //
 //---------------------------------------------------------------------------------------------------------------------
 // By      : Assaf Cohen
-// Date    : 12/30/19
+// Date    : 1/22/20
 // Comments:
 //=====================================================================================================================
 //                          						Include files
 //=====================================================================================================================
-#include "enumerate.hpp"
+#include "identify.hpp"
 #include "protocol/msg_types.hpp"
 #include "session.hpp"
 #include "singleton_runner/authenticated_scan_server.hpp"
 #include "client/winrm_client.hpp"
-using trustwave::Winrm_Enumerate_Action;
+using trustwave::Winrm_Identify_Action;
 
-int Winrm_Enumerate_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
+int Winrm_Identify_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
                                 std::shared_ptr<result_msg> res)
 {
     if(!sess || (sess && sess->id().is_nil())) {
@@ -28,25 +28,17 @@ int Winrm_Enumerate_Action::act(boost::shared_ptr<session> sess, std::shared_ptr
         return -1;
     }
     winrm_client cli(sess->remote(), 5985, "/wsman", "http", "Basic", sess->creds().username(),
-                        sess->creds().password());
-    const std::string r{"http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service"};
-    std::vector<std::string> res2;
-    trustwave::winrm_filter filt("http://schemas.microsoft.com/wbem/wsman/1/WQL",
-                                "SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IpEnabled=TRUE");
-
-    auto winrm_enumerate_action = std::dynamic_pointer_cast<winrm_action_enumerate_msg>(action);
-    std::vector<std::string> enumerate_res;
-    res->res(cli.Get(winrm_enumerate_action->uri_, std::addressof(winrm_get_action->selectors_) ));
-    cli.Enumerate(r, filt, res2);
+                     sess->creds().password());
+    res->res(cli.Identify().first?"True":"False");
 
     return 0;
 }
 
 // instance of the our plugin
-static std::shared_ptr<Winrm_Enumerate_Action> instance = nullptr;
+static std::shared_ptr<Winrm_Identify_Action> instance = nullptr;
 
 // extern function, that declared in "action.hpp", for export the plugin from dll
 std::shared_ptr<trustwave::Action_Base> import_action()
 {
-    return instance ? instance : (instance = std::make_shared<Winrm_Enumerate_Action>());
+    return instance ? instance : (instance = std::make_shared<Winrm_Identify_Action>());
 }

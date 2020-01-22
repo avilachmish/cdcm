@@ -14,3 +14,5 @@ install(TARGETS my_client RUNTIME DESTINATION bin
 install(TARGETS my_client
         RUNTIME DESTINATION bin
         DESTINATION ${release_bin_dest})
+
+install(FILES winrm.json  DESTINATION ${release_lib_dest}/plugins/)

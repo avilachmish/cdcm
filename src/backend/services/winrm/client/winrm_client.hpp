@@ -43,7 +43,7 @@ namespace trustwave {
         ~winrm_client() override;
 
         // Identify.
-        [[nodiscard]] std::string Identify() const;
+        [[nodiscard]] std::pair<bool,std::string> Identify() const;
 
         // Enumerate resource.
         void

@@ -28,7 +28,7 @@ enum : long {
 };
 using trustwave::winrm_client;
 
-static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
+[[nodiscard]] static bool CheckWsmanResponse(WsManClient* cl, WsXmlDocH& doc);
 
 static bool ResourceNotFound(WsManClient* cl, WsXmlDocH& enumerationRes);
 
@@ -65,16 +65,16 @@ winrm_client::~winrm_client()
     wsmc_release(cl);
 }
 
-std::string winrm_client::Identify() const
+std::pair<bool,std::string> winrm_client::Identify() const
 {
     winrm_options options;
     options.setNamespace(GetNamespace());
 
     WsXmlDocH identifyResponse = wsmc_action_identify(cl, options);
-    CheckWsmanResponse(cl, identifyResponse);
+    bool res_ok = CheckWsmanResponse(cl, identifyResponse);
     std::string xml = ExtractPayload(identifyResponse);
     ws_xml_destroy_doc(identifyResponse);
-    return xml;
+    return std::make_pair(res_ok,xml);
 }
 
 void winrm_client::Enumerate(const std::string& resourceUri, std::vector<std::string>& enumRes,
