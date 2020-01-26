@@ -192,7 +192,7 @@ void message_broker::worker_process(const std::string& sender, std::unique_ptr<z
             }
         }
     }
-    workers_.dump(); #rotem todo remove when done debugging
+    workers_.dump();//rotem todo remove when done debugging
 }
 
 //  ---------------------------------------------------------------------
