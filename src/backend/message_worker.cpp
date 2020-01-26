@@ -48,7 +48,7 @@ message_worker::~message_worker() { std::cerr << replied_ << " client msgs repli
 //  If no _msg is provided, creates one internally
 void message_worker::send_to_broker(const char* command, const std::string& option, zmsg* _msg)
 {
-    zmsg* msg = _msg ? new zmsg(*_msg) : new zmsg();
+    zmsg* msg = (nullptr != _msg) ? new zmsg(*_msg) : new zmsg();
     //  Stack protocol envelope to start of message
     if(option.length() != 0) {
         msg->push_front(option.c_str());
@@ -97,7 +97,7 @@ zmsg* message_worker::recv(zmsg*& reply_p)
     //  Format and send the reply if we were provided one
     zmsg* reply = reply_p;
     assert(reply || !expect_reply_);
-    if(reply && !reply_to_.empty()) {
+    if(nullptr != reply && !reply_to_.empty()) {
         // assert(!reply_to_.empty());
         reply->wrap(reply_to_.c_str(), "");
         reply_to_.clear();
@@ -113,7 +113,7 @@ zmsg* message_worker::recv(zmsg*& reply_p)
 
         zmq::poll(items, 1, heartbeat_.count());
 
-        if(items[0].revents & ZMQ_POLLIN) {
+        if(0 != (items[0].revents & ZMQ_POLLIN)) {
             auto msg = std::make_unique<zmsg>();
             if(msg->recv(*worker_)) {
                 AU_LOG_DEBUG("I: received message from broker body: %s", msg->body());
@@ -163,7 +163,9 @@ zmsg* message_worker::recv(zmsg*& reply_p)
             heartbeat_at_ += heartbeat_;
         }
     }
-    if(zmq_helpers::interrupted) AU_LOG_DEBUG("W: interrupt received, killing worker...\n");
+    if(zmq_helpers::interrupted) {
+        AU_LOG_DEBUG("W: interrupt received, killing worker...\n");
+    }
     return nullptr;
 }
 
@@ -199,7 +201,7 @@ int message_worker::worker_loop()
                 const auto act_key = action_msg_obj.cbegin()->first;
                 AU_LOG_DEBUG("Looking for %s", act_key.c_str());
                 auto action_result = std::make_shared<result_msg>();
-                auto action = authenticated_scan_server::instance().public_dispatcher.find(act_key);
+                auto action = authenticated_scan_server::instance().public_dispatcher().find(act_key);
                 if(action) {
                     AU_LOG_DEBUG("%s found", act_key.c_str());
                     auto act_m = action->get_message(action_message);
