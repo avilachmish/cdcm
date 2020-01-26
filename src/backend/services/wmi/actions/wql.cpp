@@ -107,15 +107,10 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
         return -1;
     }
 
-    auto client = std::dynamic_pointer_cast <trustwave::wmi_client>(sess->get_client <trustwave::wmi_client>(trustwave::cdcm_client_type::WMI_CLIENT));
-    if (!client){
-        AU_LOG_ERROR("Failed dynamic cast");
-        res->res("Error: Failed dynamic cast");
-        return -1;
-    }
+    trustwave::wmi_client client;
 
     //rotem: TODO: think how to distingush between our error and legit error
-    auto connect_result = client->connect(*sess, wmi_wql_action->wmi_namespace);
+    auto connect_result = client.connect(*sess, wmi_wql_action->wmi_namespace);
     if (false == std::get<0>(connect_result) )
     {
         AU_LOG_ERROR("failed to connect to the asset");
@@ -123,7 +118,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
         return -1;
     }
 
-    auto query_result = client->query_remote_asset(wmi_wql_action->wql);
+    auto query_result = client.query_remote_asset(wmi_wql_action->wql);
     if (false == std::get<0>(query_result) )
     {
         AU_LOG_ERROR("failed to get wql response");

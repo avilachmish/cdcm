@@ -9,12 +9,12 @@
 %define _unpackaged_files_terminate_build 0
 
 Name:       %{scl_prefix}cdcm
-Version:    1.0
+Version:    1.0.0
 Release:    1%{?dist}
 License:    Trustwave   
 Summary:    Package that installs %name
 Requires:   %{scl_prefix}samba-libs
-#Requires:   runit
+
  
 
 %description
@@ -28,7 +28,7 @@ rm -rf %{buildroot}
 %install
 [ -d %{buildroot} ] && rm -rf %{buildroot}
 %define cdcm_conf /var/cdcm/conf
-for dir in %{_libdir} %{_bindir} %{cdcm_conf} /var/cdcm/log /usr/lib ;do  
+for dir in %{_libdir} %{_bindir} %{cdcm_conf} /var/cdcm/log /var/cdcm/downloaded_files /usr/lib ;do
     [ -d %{buildroot}$dir ] || mkdir -p %{buildroot}$dir 
 done
 executables="cdcm_broker \

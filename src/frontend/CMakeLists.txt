@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
-link_directories( ${SMB_LINKS} )
+#link_directories( ${SMB_LINKS} )
 set(SOURCE_FILES
         cdcm_broker.cpp
         message_broker.cpp

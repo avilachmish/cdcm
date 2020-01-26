@@ -31,6 +31,8 @@ TAR_CMD		:= tar --numeric-owner -zcf
 SAMBA		:= samba-4.10.6
 LIBPE_PEV	:= libpe
 TAOCPP_JSON	:= taocpp-json
+HEIMDAL		:= heimdal
+OPENVAS_SMB := openvas-smb
 
 default goal: help
 
@@ -63,7 +65,6 @@ check:
 	for rpm in $(REQ_RPMS);do rpm -q $$rpm;done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
-
 # Check that % known and supported
 validate.%:
 	@echo "* run $@ `date +%F.%H:%M:%S`"
@@ -80,8 +81,20 @@ deps: pre $(TOP)/deps/.done
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
-$(TOP)/deps/.done: $(TOP)/deps/$(TAOCPP_JSON)/.done $(TOP)/deps/$(LIBPE_PEV)/.done $(TOP)/deps/$(SAMBA)/.done
+$(TOP)/deps/.done: $(TOP)/deps/$(TAOCPP_JSON)/.done $(TOP)/deps/$(LIBPE_PEV)/.done $(TOP)/deps/$(SAMBA)/.done $(TOP)/deps/$(OPENVAS_SMB)/.done
 	@echo "* run $@ `date +%F.%H:%M:%S`"
+	@echo "* fin $@ `date +%F.%H:%M:%S`"
+
+$(TOP)/deps/$(HEIMDAL)/.done: $(TOP)/tars/$(HEIMDAL).tar
+	@echo "* run $@ `date +%F.%H:%M:%S`"
+	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(HEIMDAL);fi
+	tar -xvf $(TOP)/tars/$(HEIMDAL).tar -C $(TOP)/deps/
+	(cd $(TOP)/deps/$(HEIMDAL); ./autogen.sh)
+	(cd $(TOP)/deps/$(HEIMDAL); ./configure)
+	(chown -R 777 $(TOP)/deps/$(HEIMDAL); ls -la ; whoami)
+	(cd $(TOP)/deps/$(HEIMDAL); make)
+	(cd $(TOP)/deps/$(HEIMDAL); make install)
+	touch $(TOP)/deps/$(HEIMDAL)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
 $(TOP)/deps/$(TAOCPP_JSON)/.done: $(TOP)/tars/$(TAOCPP_JSON).tar
@@ -93,6 +106,19 @@ $(TOP)/deps/$(TAOCPP_JSON)/.done: $(TOP)/tars/$(TAOCPP_JSON).tar
 	(cd $(TOP)/deps/$(TAOCPP_JSON)/build; make)
 	touch $(TOP)/deps/$(TAOCPP_JSON)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
+
+$(TOP)/deps/$(OPENVAS_SMB)/.done: $(TOP)/tars/$(OPENVAS_SMB).tar
+	@echo "* run $@ `date +%F.%H:%M:%S`"
+	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(OPENVAS_SMB);fi
+	tar -xvf $(TOP)/tars/$(OPENVAS_SMB).tar -C $(TOP)/deps/
+	-mkdir -p $(TOP)/deps/$(OPENVAS_SMB)/build
+	(cd $(TOP)/deps/$(OPENVAS_SMB)/build; cmake3 -G "Unix Makefiles" ..)
+	(cd $(TOP)/deps/$(OPENVAS_SMB)/build; make)
+	(cd $(TOP)/deps/$(OPENVAS_SMB)/build; make install)
+	touch $(TOP)/deps/$(OPENVAS_SMB)/.done
+	@echo "* fin $@ `date +%F.%H:%M:%S`"
+
+
 
 $(TOP)/deps/$(LIBPE_PEV)/.done: $(TOP)/tars/$(LIBPE_PEV).tar
 	@echo "* run $@ `date +%F.%H:%M:%S`"
