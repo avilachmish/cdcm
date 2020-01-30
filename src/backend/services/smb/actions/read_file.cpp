@@ -97,7 +97,7 @@ int SMB_Read_File::act(boost::shared_ptr<session> sess, std::shared_ptr<action_m
     std::string base("smb://");
     base.append(sess->remote()).append("/").append(smb_action->path_);
     trustwave::smb_client rc;
-    auto connect_result = rc.connect(base.c_str());
+    auto connect_result = rc.open_file(base.c_str());
     if(!connect_result.first) {
         AU_LOG_DEBUG("got smb error: %i - %s", connect_result.second, std::strerror(connect_result.second));
         res->res(std::string("Error: ") + std::string(std::strerror(connect_result.second)));
@@ -108,7 +108,7 @@ int SMB_Read_File::act(boost::shared_ptr<session> sess, std::shared_ptr<action_m
     if(0 == sz) {
         sz = rc.file_size() - off;
     }
-    AU_LOG_ERROR("Received offset: %zu size: %zu", off, sz);
+    AU_LOG_DEBUG("Received offset: %zu size: %zu", off, sz);
     auto buff = new(std::nothrow) char[sz];
     if(nullptr == buff) {
         res->res("Error: Memory allocation failed");

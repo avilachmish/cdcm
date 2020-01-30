@@ -56,19 +56,21 @@ namespace trustwave {
         public configurable<smb_service_configuration> {
     public:
         smb_client();
-        virtual ~smb_client() override; //rotem: assaf, why virtual if the class is final?
-        bool list(const std::string&, std::vector<trustwave::dirent>&);
+        ~smb_client() override;
+        bool list_dir(const std::string& path, std::vector<trustwave::dirent>& dirents);
         bool download_portion_to_memory(const char* base, const char* name, off_t offset, off_t count);
         ssize_t read(size_t offset, size_t size, char* dest) override;
         [[nodiscard]] uintmax_t file_size() const override;
         [[nodiscard]] time_t last_modified() const;
         bool validate_open() override;
-        std::pair<bool, int> connect(const char* path);
+        std::pair<bool, int> open_file(const char* path);
 
     private:
         bool download_portion(off_t curpos, off_t count, bool to_file);
         int remote_fd_ = -1;
         int local_fd_ = -1;
+        SMBCCTX* ctx_;
+        SMBCCTX* old_;
         struct stat localstat_ {
         };
         struct stat remotestat_ {

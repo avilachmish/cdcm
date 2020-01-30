@@ -31,21 +31,6 @@
             <session_item action="start_session" verification_method="do_not_verify"/>
             <session_item action="enumerate" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
                           verification_method="substr_exist" substr="class_name"/>
-            <session_item action="enumerate" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
-                          verification_method="regex_match" regex="^.*SeCEdit.*$"/>
-            <session_item action="enumerate" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug"
-                          verification_method="substr_exist" substr="wtsn3"/>
-            <session_item action="enumerate" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug"
-                          verification_method="regex_match" regex="^(.*)wtsn3(.*)$"/>
-            <session_item action="key_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
-                          verification_method="boolean" expected="true"/>
-            <session_item action="value_exists" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug"
-                          value="Debugger" verification_method="boolean" expected="true"/>
-            <session_item action="query_value" key="SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug"
-                          value="Debugger" verification_method="substr_exist" substr="drwtsn32"/>
-            <session_item action="get_remote_file_version" param="ADMIN$/winhlp32.exe" verification_method="regex_match"
-                          regex="^5\.2\.3790\.1830$"/>
-            <session_item action="get_os" verification_method="substr_exist" substr="CurrentBuild"/>
             <session_item action="close_session" verification_method="substr_exist" substr="session closed"/>
         </test_set>
 
@@ -77,7 +62,6 @@
     <sessions>
         <session session_name="session_1" test_set_name="01" asset_name="asset1"
                  description="test with existing values"/>
-        <session session_name="session_2" test_set_name="02" asset_name="asset1"
-                 description="test with wrong/non-exist values"/>
+
     </sessions>
 </root>

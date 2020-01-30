@@ -13,21 +13,19 @@
 //=====================================================================================================================
 //                          						Include files
 //=====================================================================================================================
-#include <unistd.h>
-#include <sstream>
-#include <iomanip>
-#include <string>
-
-#include "../smb_client.hpp"
 #include "list_dir.hpp"
+#include <iomanip>
+#include <sstream>
+#include <string>
+#include <unistd.h>
 #include "taocpp-json/include/tao/json.hpp"
 #include "taocpp-json/include/tao/json/contrib/traits.hpp"
-#include "protocol/msg_types.hpp"
-#include "session.hpp"
 #include "singleton_runner/authenticated_scan_server.hpp"
+#include "protocol/msg_types.hpp"
+#include "../smb_client.hpp"
+#include "session.hpp"
 #include "wildcards.hpp"
 
-using namespace trustwave;
 namespace tao::json {
     template<>
     struct traits<trustwave::dirent>:
@@ -35,6 +33,7 @@ namespace tao::json {
                         TAO_JSON_BIND_REQUIRED("type", &trustwave::dirent::type_)> {
     };
 } // namespace tao::json
+using trustwave::SMB_List_Dir;
 
 int SMB_List_Dir::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
                       std::shared_ptr<result_msg> res)
@@ -50,7 +49,7 @@ int SMB_List_Dir::act(boost::shared_ptr<session> sess, std::shared_ptr<action_ms
     std::string tmp_name("/tmp/" + sess->idstr() + "-" + action->id());
     trustwave::smb_client rc;
     std::vector<trustwave::dirent> dir_entries;
-    if(!rc.list(base.c_str(), dir_entries)) {
+    if(!rc.list_dir(base.c_str(), dir_entries)) {
         res->res("Error: List Failed");
         return -1;
     }
