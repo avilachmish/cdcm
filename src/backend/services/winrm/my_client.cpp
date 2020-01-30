@@ -18,7 +18,7 @@
 #include "client/winrm_client.hpp"
 int main()
 {
-    trustwave::winrm_client cli("192.168.120.237", 5985, "/wsman", "http", "Basic", "assaf", "Finjan123");
+    trustwave::winrm_client cli("192.168.120.249", 5985, "/wsman", "http", "Basic", "assaf", "Finjan123");
     cli.Identify();
     const trustwave::NameValuePairs nvp = {{"IpEnabled", "TRUE"}};
     /*

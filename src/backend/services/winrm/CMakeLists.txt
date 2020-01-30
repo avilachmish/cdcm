@@ -7,7 +7,7 @@ add_subdirectory(client)
 add_subdirectory(actions)
 
 add_executable(my_client my_client.cpp)
-target_link_libraries(my_client tw-winrm-client)
+target_link_libraries(my_client tw-winrm-client wsman wsman_client wsman_curl_client_transport xml2 curl ssl crypto pthread dl)
 
 install(TARGETS my_client RUNTIME DESTINATION bin
         DESTINATION ${bin_dest})

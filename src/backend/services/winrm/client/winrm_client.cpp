@@ -46,9 +46,9 @@ winrm_client::winrm_client(const std::string& host, const int port, const std::s
                            const std::string& auth_method, const std::string& username, const std::string& password):cl(nullptr)
 {
     cl = wsmc_create(host.c_str(), port, path.c_str(), scheme.c_str(), username.c_str(), password.c_str());
-    if(nullptr != cl) {
+    if(nullptr == cl) {
         std::string error;
-        error.append("wsmc_create failed:");
+        error.append("wsmc_create failed: ");
         error.append("host: " + host);
         error.append("username: " + username);
         throw winrm_client_exception(error.c_str(), WSMAN_GENERAL_ERROR);

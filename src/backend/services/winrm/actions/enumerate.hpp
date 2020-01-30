@@ -48,7 +48,7 @@ namespace tao::json {
             const auto o = v.at(trustwave::winrm_action_enumerate_msg::act_name);
             result.id_ = o.at("id").template as<std::string>();
             result.uri_ = o.at("uri").template as<std::string>();
-            result.uri_ = o.at("filter").template as<std::string>();
+            result.filter_ = o.at("filter").template as<std::string>();
             return result;
         }
     };

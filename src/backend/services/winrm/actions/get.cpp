@@ -27,12 +27,17 @@ int Winrm_Get_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
         res->res("Error: Session not found");
         return -1;
     }
-    winrm_client cli(sess->remote(), 5985, "/wsman", "http", "Basic", sess->creds().username(),
-                     sess->creds().password());
-    auto winrm_get_action = std::dynamic_pointer_cast<winrm_action_get_msg>(action);
-    std::vector<std::string> get_res;
-    res->res(cli.Get(winrm_get_action->uri_, std::addressof(winrm_get_action->selectors_) ));
-
+    try {
+        winrm_client cli(sess->remote(), 5985, "/wsman", "http", "Basic", sess->creds().username(),
+                         sess->creds().password());
+        auto winrm_get_action = std::dynamic_pointer_cast<winrm_action_get_msg>(action);
+        std::vector<std::string> get_res;
+        res->res(cli.Get(winrm_get_action->uri_, std::addressof(winrm_get_action->selectors_)));
+    }
+    catch(const winrm_client_exception& e) {
+        res->res(e.what());
+        return -1;
+    }
     return 0;
 }
 
