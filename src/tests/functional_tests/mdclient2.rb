@@ -8,7 +8,7 @@ folder = File.expand_path('.',__dir__)
 $:.unshift(folder) unless $:.include?(folder)
 require 'mdcliapi2.rb'
 require 'testRunner.rb'
-require 'myLogger.rb'
+require_relative 'myLogger.rb'
 require 'json'
 
 #this if prevents this file to be executing when using require 'mdclient2.rb' (currently from run_multiple_clients.rb)
