@@ -6,7 +6,7 @@ Release:    1%{?dist}
 License:    Various
 Summary:    Credentialed Data Collection Module
 BuildRequires: systemd
-
+Requires: systemd
 %description
 Credentialed Data Collection Module
 
@@ -67,32 +67,24 @@ fi
 done
 set -e
 
-%{__mkdir} -p %{buildroot}/tmp/
-cd %{buildroot}/tmp/
-tar -xvf %{_specdir}/../tars/libpe.tar
-cd  %{buildroot}/tmp/libpe
-make
-cp %{buildroot}/tmp/libpe/libpe.so %{buildroot}/usr/share/cdcm/lib/
-
 %{__mkdir} -p %{buildroot}%{_unitdir}
 %{__mkdir} -p %{buildroot}/%{_sbindir}
 %{__install} -m644 %{_specdir}/%{name}.service %{buildroot}/%{_unitdir}/%{name}.service
 ln -sf %{_sbindir}/service %{buildroot}/%{_sbindir}/rc%{name}
-%pre
-if [ -f /var/lib/systemd/migrated/%{name} ]; then
-%service_add_pre %{name}.service
-fi
+
+
 %post
 /sbin/ldconfig
-%service_add_post %{name}.service
+
+systemctl daemon-reload
+%systemd_post %{name}.service
 
 %preun
-%service_del_preun %{name}.service
+%systemd_preun %{name}.service
 
 %postun
-rm -rf /var/log/cdcm
-/sbin/ldconfig
-%service_del_postun %{name}.service
+%systemd_postun %{name}.service
+
 
 %files
 %defattr(-,root,root,-)
