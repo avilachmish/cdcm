@@ -37,17 +37,12 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
         res->res("Error: Internal error");
         return -1;
     }
+    trustwave::wmi_client client;
 
-    auto client = std::dynamic_pointer_cast <wmi_client>(sess->get_client <wmi_client>(cdcm_client_type::WMI_CLIENT));
-    if (!client){
-        AU_LOG_ERROR("Failed dynamic cast");
-        res->res("Error: Failed dynamic cast");
-        return -1;
-    }
     std::cout << "rotem bye: " << std::endl; //rotem to delete
 
     //rotem: TODO: think how to distingush between our error and legit error
-    auto connect_result = client->connect_reg(*sess, wmi_reg_enum_key_action->wmi_namespace);
+    auto connect_result = client.connect_reg(*sess, wmi_reg_enum_key_action->wmi_namespace);
     if (false == std::get<0>(connect_result) )
     {
         AU_LOG_ERROR("failed to connect to the asset");
@@ -58,7 +53,7 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
     std::cout << "rotem hive: "  << wmi_reg_enum_key_action->hive << std::endl; //rotem to delete
     std::cout << "rotem hive: " << std::stoul(wmi_reg_enum_key_action->hive, 0, 16) << std::endl; //rotem to delete
 
-    auto query_result = client->registry_enum_key(std::stoul(wmi_reg_enum_key_action->hive,0,16), wmi_reg_enum_key_action->key);
+    auto query_result = client.registry_enum_key(0x80000002, wmi_reg_enum_key_action->key);
     if (false == std::get<0>(query_result) )
     {
         AU_LOG_ERROR("failed to get wmi registry response");
