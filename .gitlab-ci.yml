@@ -189,9 +189,8 @@ test_install:
 push_tag:
   stage: deploy
   script:
-    - git remote set-url origin https://git_push_tag:${secret}@git.trustwave.com/engineering/credentialed_data_collection_module.git
-    - git tag $(date +%b-%d-%y) -m 'Periodic Release '$(date +%b-%d-%y)
-    - git push origin $(date +%b-%d-%y)
+    - cd build
+    - ./bump_version.py -b pre
   rules:
     - if: '$PeriodicTag!=null'
   tags:
