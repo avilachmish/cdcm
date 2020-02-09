@@ -5,7 +5,7 @@ require 'fileutils'
 class MyLogger
     include Singleton
     def initialize
-        response = FileUtils.mkdir_p('/var/cdcm/logs/')
+        response = FileUtils.mkdir_p('/Users/mark.richardson/Library/Logs/CDCM/')
 
         #log_file = File.open('cdcm_client.log', File::WRONLY |  File::CREAT | File::APPEND )
         log_file = File.open("/Users/mark.richardson/Library/Logs/CDCM/cdcm_client#{$client_id}.log", File::WRONLY | File::CREAT | File::TRUNC)
