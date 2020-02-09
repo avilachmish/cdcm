@@ -2,7 +2,7 @@
 
 
 require "logger"
-require 'myLogger.rb'
+require './myLogger.rb'
 
 def log
     MyLogger.instance.log
@@ -29,7 +29,7 @@ end
 # return value is a pair of boolean and an string with the result message
 ########################################
 def verify_key_exist(session_item)
-    log.info ("#{self.class.name}::#{__callee__}") {"verify_key_exist callled"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"verify_key_exist callled"}
 
     key_name = session_item.verification_ctx.vm_params[0][0]
     key_value = session_item.verification_ctx.vm_params[0][1]
@@ -37,15 +37,15 @@ def verify_key_exist(session_item)
         ver_result = Verification_Result.new(false, "the key to find is empty")
         return ver_result
     end
-    log.info ("#{self.class.name}::#{__callee__}") {"looking for the key: " + key_value}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"looking for the key: " + key_value}
     response_key = extract_response_key(session_item)
 
     if response_key.downcase.include? key_value.downcase
-        log.info ("#{self.class.name}::#{__callee__}") {"key was found in text"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"key was found in text"}
         ver_result = Verification_Result.new(true, "key was found in text")
         return ver_result
     else
-        log.info ("#{self.class.name}::#{__callee__}") {"key was NOT found in text"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"key was NOT found in text"}
         ver_result = Verification_Result.new(false, "key was NOT found in text")
         return ver_result
     end
@@ -55,22 +55,22 @@ end
 #
 ########################################
 def compare_result_to_bool(session_item)
-    log.info ("#{self.class.name}::#{__callee__}") {"compare_result_to_bool callled"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"compare_result_to_bool callled"}
     key_name = session_item.verification_ctx.vm_params[0][0]
     key_value = session_item.verification_ctx.vm_params[0][1]
     if key_value.nil? || key_value.empty?
         ver_result = Verification_Result.new(false, "the key to find is empty")
         return ver_result
     end
-    log.info ("#{self.class.name}::#{__callee__}") {"copmare result with expected value of: " + key_value}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"copmare result with expected value of: " + key_value}
     response_key = extract_response_key(session_item)
 
     if response_key.downcase ==key_value.downcase
-        log.info ("#{self.class.name}::#{__callee__}") {"response is as expected"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"response is as expected"}
         ver_result = Verification_Result.new(true, "response is as expected: " + key_value.downcase)
         return ver_result
     else
-        log.info ("#{self.class.name}::#{__callee__}") {"response val is not as expected"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"response val is not as expected"}
         ver_result = Verification_Result.new(false, "response val is not as expected")
         return ver_result
     end
@@ -82,7 +82,7 @@ end
 # return value is a pair of boolean and an string with the result message
 ########################################
 def reg_match(session_item)
-    log.info ("#{self.class.name}::#{__callee__}") {"reg_match called"}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reg_match called"}
 
     key_name = session_item.verification_ctx.vm_params[0][0]
     key_value = session_item.verification_ctx.vm_params[0][1]
@@ -90,17 +90,17 @@ def reg_match(session_item)
         ver_result = Verification_Result.new(false, "the regex to find is empty")
         return ver_result
     end
-    log.info ("#{self.class.name}::#{__callee__}") {"looking for the key: " + key_value}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"looking for the key: " + key_value}
     response_key = extract_response_key(session_item)
 
     regex_match_res = response_key.match(key_value)
 
     if regex_match_res.nil?
-        log.info ("#{self.class.name}::#{__callee__}") {"regex does not match the response"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"regex does not match the response"}
         ver_result = Verification_Result.new(false, "regex does not match the response")
         return ver_result
     else
-        log.info ("#{self.class.name}::#{__callee__}") {"regex match to the response"}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"regex match to the response"}
         ver_result = Verification_Result.new(true, "regex " + key_value + " match to the response")
         return ver_result
     end
@@ -140,17 +140,21 @@ class Verifier
                 session_item.verification_ctx.vm_result = "failed"
             end
         when "do_not_verify"
-            session_item.verification_ctx.vm_result = "passed "
+            session_item.verification_ctx.vm_result = "passed"
         else
-            log.info ("#{self.class.name}::#{__callee__}") {"ERROR: unknown method used: " + session_item.verification_ctx.vm_name}
+            log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"ERROR: unknown method used: " + session_item.verification_ctx.vm_name}
             puts "ERROR: unknown method used"
             session_item.verification_ctx.verification_result.vm_result_message = "ERROR: unknown method: #{session_item.verification_ctx.vm_name}"
             session_item.verification_ctx.vm_result = "failed"
         end
-        log.info ("#{self.class.name}::#{__callee__}") {"verification result: " + session_item.verification_ctx.dump}
+        log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"verification result: " + session_item.verification_ctx.dump}
 
     end
 
+    def set_failed_verification(session_item)
+        session_item.verification_ctx.verification_result = Verification_Result.new(false, "malformed request")
+        session_item.verification_ctx.vm_result = "failed"
+    end
 end #end of class Verifier
 
 class Verification_Result

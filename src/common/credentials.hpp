@@ -19,28 +19,30 @@
 //                          						Include files
 //=====================================================================================================================
 #include <string>
-struct cli_credentials;
+
 //=====================================================================================================================
 //                          						namespaces
 //=====================================================================================================================
 namespace trustwave {
-class credentials
-{
-public:
-    credentials(const std::string& domain, const std::string& username, const std::string& password,
-                    const std::string workstation);
+    class credentials {
+    public:
+        credentials(const std::string& domain, const std::string& username, const std::string& password,
+                    const std::string& workstation);
 
-    ~credentials();
+        ~credentials() = default;
+        void creds(const std::string& domain, const std::string& username, const std::string& password,
+                   const std::string& workstation);
+        std::string domain() const;
+        std::string username() const;
+        std::string password() const;
+        std::string workstation() const;
 
-    cli_credentials *creds() const;
-    void creds(const std::string& domain, const std::string& username, const std::string& password,
-                    const std::string workstation);
-
-private:
-    cli_credentials *create_creds(const char* domain, const char* username, const char* password,
-                    const char* workstation) const;
-    struct cli_credentials *creds_;
-};
-}
+    private:
+        std::string domain_;
+        std::string username_;
+        std::string password_;
+        std::string workstation_;
+    };
+} // namespace trustwave
 
 #endif /* TRUSTWAVE_COMMON_CREDENTIALS_HPP_ */

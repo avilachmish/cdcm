@@ -17,224 +17,102 @@
 #define TRUSTWAVE_COMMON_PROTOCOL_MSG_TYPES_HPP_
 #include <memory>
 #include <string>
+#include <taocpp-json/include/tao/json/value.hpp>
 #include <utility>
 #include <vector>
 namespace trustwave {
-//todo assaf fix encapsulation
-struct result_msg
-{
-public:
-    std::string id_;
-    std::string res_;
-public:
-    virtual ~result_msg() = default;
-    result_msg(const result_msg&) = default;
-    result_msg(result_msg&&) = default;
-    result_msg& operator=(const result_msg&) = default;
-    result_msg& operator=(result_msg&&) = default;
-    result_msg() = default;
-    std::string id() const
-    {
-        return id_;
-    }
-    void id(const std::string ids)
-    {
-        id_ = ids;
-    }
-    std::string res() const
-    {
-        return res_;
-    }
-    void res(const std::string ress)
-    {
-        res_ = ress;
-    }
-};
+    // todo assaf fix encapsulation
+    struct result_msg {
+    public:
+        std::string id_;
+        std::string res_;
 
-struct action_msg
-{
-    virtual ~action_msg() = default;
-    action_msg(const action_msg&) = default;
-    action_msg(action_msg&&) = default;
-    action_msg& operator=(const action_msg&) = delete;
-    action_msg& operator=(action_msg&&) = delete;
-    action_msg() = delete;
-    const std::string& name() const
-    {
-        return name_;
-    }
-    std::string id() const
-    {
-        return id_;
-    }
-    void id(const std::string ids)
-    {
-        id_ = ids;
-    }
-
-    std::string id_;
-    const std::string name_;
-
-protected:
-    action_msg(std::string  name) :
-                    name_(std::move(name))
-    {
-    }
-
-};
-
-struct reg_action_query_value_msg: public action_msg
-{
-    reg_action_query_value_msg() :
-                    action_msg("query_value")
-    {
-    }
-    std::string key_;
-    std::string value_;
-
-};
-struct reg_action_get_os_msg: public action_msg
-{
-    reg_action_get_os_msg() :
-            action_msg("get_os")
-    {
-    }
-};
-struct reg_action_enum_key_msg: public action_msg
-{
-    reg_action_enum_key_msg() :
-                    action_msg("enumerate")
-    {
-    }
-    std::string key_;
-
-};
-    struct reg_action_value_exists_msg: public action_msg
-    {
-        reg_action_value_exists_msg() :
-                action_msg("value_exists")
-        {
-        }
-        std::string key_;
-        std::string value_;
+    public:
+        virtual ~result_msg() = default;
+        result_msg(const result_msg&) = default;
+        result_msg(result_msg&&) = default;
+        result_msg& operator=(const result_msg&) = default;
+        result_msg& operator=(result_msg&&) = default;
+        result_msg() = default;
+        std::string id() const { return id_; }
+        void id(const std::string& ids) { id_ = ids; }
+        std::string res() const { return res_; }
+        void res(const std::string& ress) { res_.assign(ress); }
     };
-struct reg_action_key_exists_msg: public action_msg
-{
-    reg_action_key_exists_msg() :
-                    action_msg("key_exists")
-    {
-    }
-    std::string key_;
 
-};
+    struct action_msg {
+        virtual ~action_msg() = default;
+        action_msg(const action_msg&) = default;
+        action_msg(action_msg&&) = default;
+        action_msg& operator=(const action_msg&) = delete;
+        action_msg& operator=(action_msg&&) = delete;
+        action_msg() = delete;
+        std::string name() const { return std::move(std::string(name_)); }
+        std::string id() const { return id_; }
+        void id(const std::string& ids) { id_ = ids; }
 
-struct local_start_session_msg: public action_msg
-{
+        std::string id_;
+        const std::string_view name_;
 
-    local_start_session_msg() :
-                    action_msg("start_session")
-    {
-    }
-    std::string remote;
-    std::string domain;
-    std::string username;
-    std::string password;
-    std::string workstation;
-};
+    protected:
+        explicit action_msg(const std::string_view name): name_(name) {}
+    };
+    struct single_param_action_msg: public action_msg {
+        single_param_action_msg() = delete;
 
-struct local_close_session_msg: public action_msg
-{
+    protected:
+        explicit single_param_action_msg(const std::string_view name): action_msg(name) {}
 
-    local_close_session_msg() :
-                    action_msg("close_session")
-    {
-    }
+        single_param_action_msg(const single_param_action_msg& o, const std::string_view& name): action_msg(name)
+        {
+            id_ = o.id_;
+            param = o.param;
+        }
 
-};
+    public:
+        std::string param;
+    };
 
-struct single_param_action_msg: public action_msg
-{
-protected:
-    single_param_action_msg() = delete;
-    single_param_action_msg(const std::string& name) :
-                    action_msg(name)
-    {
-    }
-    single_param_action_msg(const single_param_action_msg& o, const std::string& name) :
-                    action_msg(name)
-    {
-        id_ = o.id_;
-        param = o.param;
-    }
-public:
-    std::string param;
-};
+    struct header {
+        std::string session_id;
+    };
+    struct msg {
+        header hdr;
+        std::vector<std::shared_ptr<action_msg>> msgs;
+        virtual ~msg() = default;
+        msg(const msg&) = default;
+        msg(msg&&) = default;
+        msg& operator=(const msg&) = default;
+        msg& operator=(msg&&) = default;
+        msg() = default;
+    };
+    struct raw_msg {
+        header hdr;
+        std::vector<std::map<std::string, tao::json::value, std::less<>>> msgs;
 
-struct smb_get_file_msg: public single_param_action_msg
-{
+        virtual ~raw_msg() = default;
 
-    smb_get_file_msg() :
-                    single_param_action_msg("get_file")
-    {
-    }
-    smb_get_file_msg(const single_param_action_msg& o) :
-                    single_param_action_msg(o, "get_file")
-    {
-    }
-};
-struct get_remote_file_version_msg: public single_param_action_msg
-{
+        raw_msg(const raw_msg&) = default;
 
-    get_remote_file_version_msg() :
-                    single_param_action_msg("get_remote_file_version")
-    {
-    }
-    get_remote_file_version_msg(const single_param_action_msg& o) :
-                    single_param_action_msg(o, "get_remote_file_version")
-    {
-    }
-};
+        raw_msg(raw_msg&&) = default;
 
-struct local_get_file_version_msg: public single_param_action_msg
-{
+        raw_msg& operator=(const raw_msg&) = default;
 
-    local_get_file_version_msg() :
-                    single_param_action_msg("local_get_file_version_msg")
-    {
-    }
-    local_get_file_version_msg(const single_param_action_msg& o) :
-                    single_param_action_msg(o, "local_get_file_version_msg")
-    {
-    }
-};
+        raw_msg& operator=(raw_msg&&) = default;
 
-struct header
-{
-    std::string session_id;
-};
-struct msg
-{
-    header hdr;
-    std::vector<std::shared_ptr<action_msg>> msgs;
-    virtual ~msg() = default;
-    msg(const msg&) = default;
-    msg(msg&&) = default;
-    msg& operator=(const msg&) = default;
-    msg& operator=(msg&&) = default;
-    msg() = default;
-};
+        raw_msg() = default;
+    };
+    struct res_msg {
+        header hdr;
+        std::vector<std::shared_ptr<result_msg>> msgs;
+        virtual ~res_msg() = default;
+        res_msg(const res_msg&) = default;
+        res_msg(res_msg&&) = default;
+        res_msg& operator=(const res_msg&) = default;
+        res_msg& operator=(res_msg&&) = default;
+        res_msg() = default;
+    };
 
-struct res_msg
-{
-    header hdr;
-    std::vector<std::shared_ptr<result_msg>> msgs;
-    virtual ~res_msg() = default;
-    res_msg(const res_msg&) = default;
-    res_msg(res_msg&&) = default;
-    res_msg& operator=(const res_msg&) = default;
-    res_msg& operator=(res_msg&&) = default;
-    res_msg() = default;
-};
-}
+} // namespace trustwave
 
 #endif /* TRUSTWAVE_COMMON_PROTOCOL_MSG_TYPES_HPP_ */

@@ -19,11 +19,13 @@
 //                          						Include files
 //=====================================================================================================================
 #include "settings.hpp"
-#include "../action.hpp"
-#include "../typedefs.hpp"
-#include "../dispatcher.hpp"
-#include "../Logger/include/Logger.h"
-#include "../sessions_cache/shared_mem_sessions_cache.hpp"
+#include "action.hpp"
+#include "configurable.hpp"
+#include "configuration.hpp"
+#include "typedefs.hpp"
+#include "dispatcher.hpp"
+#include "Logger/include/Logger.h"
+#include "sessions_cache/shared_mem_sessions_cache.hpp"
 
 //=====================================================================================================================
 //                          						namespaces
@@ -31,36 +33,34 @@
 
 namespace trustwave {
 
-struct authenticated_scan_server {
-    std::unique_ptr <ILogger> logger_ptr;
-    Dispatcher <Action_Base> prv_dispatcher;
-    Dispatcher <Action_Base> public_dispatcher;
-    boost::shared_ptr <shared_mem_sessions_cache> sessions;
-    cdcm_settings settings;
-    authenticated_scan_server(const authenticated_scan_server&) = delete;
-    authenticated_scan_server& operator=(const authenticated_scan_server &) = delete;
-    authenticated_scan_server(authenticated_scan_server &&) = delete;
-    authenticated_scan_server & operator=(authenticated_scan_server &&) = delete;
+    class authenticated_scan_server final: public configurable<cdcm_settings> {
+    public:
+        [[nodiscard]] Dispatcher<Action_Base>& public_dispatcher();
+        Dispatcher<configuration> service_conf_reppsitory;
+        boost::shared_ptr<shared_mem_sessions_cache> sessions;
+        virtual ~authenticated_scan_server() = default;
+        authenticated_scan_server(const authenticated_scan_server&) = delete;
+        authenticated_scan_server& operator=(const authenticated_scan_server&) = delete;
+        authenticated_scan_server(authenticated_scan_server&&) = delete;
+        authenticated_scan_server& operator=(authenticated_scan_server&&) = delete;
+        std::shared_ptr<cdcm_settings> settings() { return conf_; }
+        static auto& instance()
+        {
+            static authenticated_scan_server app;
+            return app;
+        }
+        ILogger* logger() { return logger_ptr_.get(); }
+        template<typename T> int run_as(size_t instance_id = 0);
+        boost::shared_ptr<session> get_session(const std::string& session_id);
 
-    static auto& instance()
-    {
-        static authenticated_scan_server app;
-        return app;
-    }
-    ILogger* logger()
-    {
-        return logger_ptr.get();
-    }
-    template<typename T>
-    int run_as(size_t instance_id = 0);
-    boost::shared_ptr <session> get_session(const std::string& session_id);
-private:
+    private:
 #undef uint_t
-    authenticated_scan_server();
+        authenticated_scan_server();
+        std::unique_ptr<ILogger> logger_ptr_;
+        Dispatcher<Action_Base> public_dispatcher_;
+    };
 
-};
-
-}
+} // namespace trustwave
 #include "log_macros.hpp"
 
 #endif /* TRUSTWAVE_COMMON_SINGLETON_RUNNER_AUTHENTICATED_SCAN_SERVER_HPP_ */
