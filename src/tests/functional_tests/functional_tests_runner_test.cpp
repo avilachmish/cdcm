@@ -35,6 +35,8 @@ BOOST_AUTO_TEST_CASE(standard)
     ios.run();
     auto out = pa.first.get();
     auto err = pa.second.get();
+    std::cerr << out << std::endl;
+    std::cerr << err << std::endl;
     std::vector<std::string> cont;
     boost::split(cont, out, boost::is_any_of("\n"));
     BOOST_TEST_MESSAGE("Ran " << cont.size() << " tests");
