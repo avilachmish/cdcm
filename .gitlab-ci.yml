@@ -1,5 +1,5 @@
 variables:
-  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_REF_SLUG
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_COMMIT_TAG
 
 cache:
   key: "$CI_COMMIT_REF_SLUG"
@@ -13,12 +13,10 @@ stages:
   - coverage
   - build_rpms
   - test_install
-  - pages_deploy
+  #  - pages_deploy
   - deploy
 
 before_script:
-  - yum install -y openldap-devel.x86_64
-  - export VERSION=$(grep -m 1 'Version:' ./build/cdcm.spec | cut -d ' ' -f 5)
   - export REPORT_FNAME=results.$(date +%d-%m-%Y-%H_%M_%S).xml
   - echo $CI_PROJECT_DIR
   - export CMAKE_FLAGS='-DBUILD_DEV=OFF'
@@ -34,7 +32,8 @@ build_deps:
     - cd build
     - scl enable devtoolset-8 'make deps'
   rules:
-    - changes:
+    - if: '$BumpTag == null'
+      changes:
         - build/Makefile
         - tars/*
         - .gitlab-ci.yml
@@ -56,9 +55,12 @@ build:
     - cd build_cdcm
     - scl enable devtoolset-8 "cmake3 $CMAKE_FLAGS .."
     - scl enable devtoolset-8 "make -j4"
+    - rm -fr /opt/output/libs/*
+    - rm -fr /opt/output/bin/*
     - scl enable devtoolset-8 "make install"
   rules:
-    - changes:
+    - if: '$BumpTag == null'
+      changes:
         - src/**/*
         - .gitlab-ci.yml
   artifacts:
@@ -71,14 +73,25 @@ build:
     policy: pull
   tags:
     - cdcm
+  dependencies:
+    - build_deps
 
 test:
   stage: test
+  allow_failure: true
   script:
-    - cd build_cdcm/src/tests/
+    - cd build_cdcm/
+    - scl enable devtoolset-8 "make install"
+    - cd src/tests/
+    - pkill -9 cdcm
+    - LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/output/${CI_COMMIT_BRANCH}/libs nohup cdcm_broker
     - ./tests_run  --log_sink=$REPORT_FNAME  --log_format=JUNIT  --log_level=all
+    - pkill -9 cdcm
+    - cd ../..
+    - make uninstall
   rules:
-    - changes:
+    - if: ' $RunFast==null && $BumpTag == null'
+      changes:
         - src/**/*
         - .gitlab-ci.yml
   artifacts:
@@ -101,45 +114,52 @@ html_coverage:
     paths:
       - build_cdcm/src/html_coverage
     expire_in: 10 days
-  tags:
-    - cdcm
   rules:
-    - changes:
+    - if: '$RunFast==null && $CI_COMMIT_BRANCH=="master" && $BumpTag == null && $CI_COMMIT_TAG!=null'
+      changes:
         - src/**/*
         - .gitlab-ci.yml
-
-
-pages:
-  stage: pages_deploy
-  dependencies:
-    - html_coverage
-  script:
-    - mkdir -p public
-    - rm -rf public/*
-    - cp -r build_cdcm/src/html_coverage/* public/
-  artifacts:
-    name: pages
-    paths:
-      - public/
-    expire_in: 15 days
-  rules:
-    - exists:
-        - build_cdcm/src/html_coverage/*
   tags:
     - cdcm
+  dependencies:
+    - build
+
+#
+#pages:
+#  stage: pages_deploy
+#  dependencies:
+#    - html_coverage
+#  script:
+#    - mkdir -p public
+#    - rm -rf public/*
+#    - cp -r build_cdcm/src/html_coverage/* public/
+#  artifacts:
+#    name: pages
+#    paths:
+#      - public/
+#    expire_in: 15 days
+#  only:
+#    refs:
+#      - branches
+#  tags:
+#    - cdcm
 
 build_rpms:
   stage: build_rpms
   script:
     - cd build
-    - rpmbuild -bb cdcm.spec
-    - rpmbuild -bb samba-libs.spec
-    - rpmbuild -bb tw-cdcm.spec
+    - export VERSION=$(cat version.txt | cut -d'-' -f 1 | cut -d'.' -f1,2,3)
+    - export RELEASE=$(cat version.txt | cut -d'-' -f 1 | cut -d'.' -f 4)
+    - rpmbuild  --define "pkg_version $VERSION"  --define "release $RELEASE" -bb cdcm.spec
   rules:
-    - changes:
+    - if: '$BumpTag == null'
+      changes:
         - cdcm_settings.json
         - src/**/*
+        - build/cdcm.spec
+        - build/tw-cdcm.service
         - .gitlab-ci.yml
+        - build/nexus_deploy.py
   artifacts:
     paths:
       - build/RPMS/x86_64/
@@ -156,27 +176,79 @@ test_install:
   tags:
     - cdcm_install
   script:
-    - echo "will install rpm's and test"
     - cd build
-    - yum localinstall -y RPMS/x86_64/*.rpm
-    - scl enable tw-cdcm1 "cdcm_broker &"
+    - sudo yum localinstall -y RPMS/x86_64/*.rpm
+    - sleep 5
+    - sudo systemctl start tw-cdcm
+    - sleep 5
+    - sudo systemctl status tw-cdcm
+    - sleep 5
+    - sudo systemctl stop tw-cdcm
+    - sleep 5
+    - sudo yum -y erase tw-cdcm
+  rules:
+    - if: '$RunFast==null && $CI_COMMIT_BRANCH=="master" && $BumpTag == null'
+      changes:
+        - cdcm_settings.json
+        - src/**/*
+        - build/cdcm.spec
+        - build/tw-cdcm.service
+        - .gitlab-ci.yml
+    - exists:
+        - build/RPMS/x86_64/*.rpm
+  dependencies:
+    - build_rpms
+  allow_failure: true
 
-deploy_release:
+push_tag:
   stage: deploy
   script:
     - cd build
-    - python nexus_deploy.py -a cdcm -v $VERSION -r release RPMS/x86_64/*.rpm
-  only:
-    - tags
+    - git remote set-url origin https://git_push_tag:${secret}@git.trustwave.com/engineering/credentialed_data_collection_module.git
+    - bump2version $BumpTag --verbose --config-file ./bumpversion.cfg
+    #    - if ["$BumpTag" != "snapshot"]; then git tag $(date +%b-%d-%y) -m 'Periodic Release '$(date +%b-%d-%y) ; fi;
+    - git push origin
+    - git push origin --tags
+  rules:
+    - if: ' $BumpTag != null'
   tags:
     - cdcm
 
-deploy_snapshot:
+#deploy_release:
+#  stage: deploy
+#  script:
+#    - cd build
+#    - export VERSION=$(cat version.txt | cut -d'-' -f 1 )
+#    - export RELEASE=$(cat version.txt | cut -d'-' -f 2 )
+#    - export DIST=$(rpm --eval '%{dist}'|cut -d'.' -f 2)
+#    - if [ $VERSION = $RELEASE ]; then export FNAME=tw-cdcm-$VERSION.$DIST.x86_64.rpm ; else export FNAME=tw-cdcm-$VERSION-$RELEASE.$DIST.x86_64.rpm ; fi
+#    - echo $FNAME
+#    - mvn deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION  -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/releases -Dpackaging=x86_64.rpm -Dfile=RPMS/x86_64/$FNAME
+#  rules:
+#    - if: '$BumpTag == null && $CI_COMMIT_BRANCH=="master"'
+#    - exists:
+#        - build/RPMS/x86_64/*.rpm
+#  tags:
+#    - cdcm
+#  dependencies:
+#    - build_rpms
+
+deploy:
   stage: deploy
   script:
     - cd build
-    - python nexus_deploy.py -a cdcm -b $CI_COMMIT_BRANCH -v $VERSION RPMS/x86_64/*.rpm
-  only:
-    - branches
+    - export VERSION=$(cat version.txt | cut -d'-' -f 1 )
+    - export SNAPSHOT=$(cat version.txt | cut -d'-' -f 2 )
+    - export RELEASE=$(cat version.txt | cut -d'-' -f 1 | cut -d'.' -f 4)
+    - if [ "$CI_COMMIT_BRANCH" = "master" ]; then  export BRANCH=''; else export BRANCH=$CI_COMMIT_BRANCH- ;fi
+    - if [ "$(echo $SNAPSHOT|cut -d'_' -f 1)" = "SNAPSHOT" ]; then export VERSION=$BRANCH$VERSION-SNAPSHOT; export REPO=snapshots ; else export REPO=releases ;fi
+    - echo deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/$REPO -Dpackaging=x86_64.rpm -Dfile=$(ls -d RPMS/x86_64/*)
+    - mvn deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/$REPO -Dpackaging=x86_64.rpm -Dfile=$(ls -d RPMS/x86_64/*)
+  rules:
+    - if: '$BumpTag == null '
+    - exists:
+        - build/RPMS/x86_64/*.rpm
   tags:
     - cdcm
+  dependencies:
+    - build_rpms

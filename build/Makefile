@@ -2,9 +2,6 @@ MKDIR 		:= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 TOP 		:= $(subst /build/,,$(MKDIR))
 export TOP
 export MKDIR
-
-include $(MKDIR)/version.mk
-include $(MKDIR)/repos.mk
 include $(MKDIR)/conf.mk
 
 export PRJ
@@ -102,7 +99,7 @@ $(TOP)/deps/$(TAOCPP_JSON)/.done: $(TOP)/tars/$(TAOCPP_JSON).tar
 	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(TAOCPP_JSON);fi
 	tar -xvf $(TOP)/tars/$(TAOCPP_JSON).tar -C $(TOP)/deps/
 	-mkdir -p $(TOP)/deps/$(TAOCPP_JSON)/build
-	(cd $(TOP)/deps/$(TAOCPP_JSON)/build; cmake3 -G "Unix Makefiles" ..)
+	(cd $(TOP)/deps/$(TAOCPP_JSON)/build; cmake3 -G "Unix Makefiles" -DTAOCPP_JSON_BUILD_TESTS=OFF -DTAOCPP_JSON_BUILD_EXAMPLES=OFF ..)
 	(cd $(TOP)/deps/$(TAOCPP_JSON)/build; make)
 	touch $(TOP)/deps/$(TAOCPP_JSON)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
@@ -142,7 +139,7 @@ $(TOP)/deps/$(SAMBA)/.done: $(TOP)/tars/$(SAMBA).tar
                                                                 --disable-rpath        \
                                                                 --disable-python)
 
-	(cd $(TOP)/deps/$(SAMBA); make)
+	(cd $(TOP)/deps/$(SAMBA); make -j4)
 	touch $(TOP)/deps/$(SAMBA)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 

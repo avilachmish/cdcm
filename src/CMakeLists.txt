@@ -68,18 +68,29 @@ include_directories(common)
 link_directories(${DEPS_DIR}/libpe-pev/build)
 
 set(bin_dest "bin")
-set(release_bin_dest "/opt/output/bin")
-set(release_lib_dest "/opt/output/libs")
+set(release_bin_dest "/opt/output/$ENV{CI_COMMIT_BRANCH}/bin")
+set(release_lib_dest "/opt/output/$ENV{CI_COMMIT_BRANCH}/libs")
 set(VERSION "1.0")
 set(include_dest "include/cdcm-${VERSION}")
-set(lib_dest "lib/cdcm-${VERSION}")
+set(lib_dest "/opt/output/$ENV{CI_COMMIT_BRANCH}/libs")
 add_subdirectory(scripts)
 add_subdirectory(common)
 add_subdirectory(backend)
 add_subdirectory(frontend)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 configure_file(../cdcm_settings.json /etc/cdcm/cdcm_settings.json COPYONLY)
 configure_file(../Logger/module.xml /etc/cdcm/Logger/module.xml COPYONLY)
-
+install(FILES ../Logger/module.xml DESTINATION /etc/cdcm/Logger/)
+install(FILES ../cdcm_settings.json DESTINATION /etc/cdcm/)
 install(FILES ../scripts/cdcm.sh DESTINATION ${release_bin_dest})
 
+# uninstall target
+if (NOT TARGET uninstall)
+    configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/uninstall.cmake.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
+            IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+            COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake)
+endif ()
