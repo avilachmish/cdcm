@@ -18,7 +18,7 @@
 
 using namespace trustwave;
 
-std::string wql_resp_to_json(std::string work_str) {
+tao::json::value wql_resp_to_json_value(std::string work_str) {
 
     boost::char_separator<char> end_of_line_delim("\n");
     boost::char_separator<char> keys_delim("|");
@@ -82,10 +82,10 @@ std::string wql_resp_to_json(std::string work_str) {
 
     consumer.end_array();
     const tao::json::value json_value = std::move( consumer.value );
-    std::string json_value_as_str = to_string(json_value,1);
 
-    return (std::move(to_string(json_value,1)));
+    return (std::move(json_value));
 }
+
 
 
 /********************************************************
@@ -127,9 +127,8 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
     }
 
     std::string wql_raw_response = std::get<1>(query_result);
-    std::string wql_resp_json = wql_resp_to_json(wql_raw_response);
-
-    res->res(wql_resp_json);
+    auto wql_resp_json_value = wql_resp_to_json_value(wql_raw_response);
+    res->res(wql_resp_json_value);
     return 0;
 }
 
