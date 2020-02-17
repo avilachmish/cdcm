@@ -21,7 +21,7 @@ before_script:
   - echo $CI_PROJECT_DIR
   - export CMAKE_FLAGS='-DBUILD_DEV=OFF'
   - if [ -z $CI_COMMIT_TAG ]; then export CMAKE_FLAGS='-DBUILD_DEV=ON' ; fi;
-  - echo $CMAKE_FLAGS
+  - env
 
 after_script:
   - echo "After script section"
@@ -32,7 +32,7 @@ build_deps:
     - cd build
     - scl enable devtoolset-8 'make deps'
   rules:
-    - if: '$BumpTag == null'
+    - if: '$BumpTag == null || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       changes:
         - build/Makefile
         - tars/*
@@ -59,10 +59,11 @@ build:
     - rm -fr /opt/output/bin/*
     - scl enable devtoolset-8 "make install"
   rules:
-    - if: '$BumpTag == null'
+    - if: '$BumpTag == null || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       changes:
         - src/**/*
         - .gitlab-ci.yml
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
   artifacts:
     paths:
       - build_cdcm/
@@ -94,6 +95,7 @@ test:
       changes:
         - src/**/*
         - .gitlab-ci.yml
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
   artifacts:
     when: always
     paths:
@@ -148,11 +150,13 @@ build_rpms:
   stage: build_rpms
   script:
     - cd build
-    - export VERSION=$(cat version.txt | cut -d'-' -f 1 | cut -d'.' -f1,2,3)
-    - export RELEASE=$(cat version.txt | cut -d'-' -f 1 | cut -d'.' -f 4)
-    - rpmbuild  --define "pkg_version $VERSION"  --define "release $RELEASE" -bb cdcm.spec
+    - export VERSION=$(cat version.txt )
+    - export SNAPSHOT=$(cat version.txt | cut -d'_' -f 1 | cut -d'.' -f 4)
+    - if [ "$CI_COMMIT_BRANCH" = "master" ]; then  export BRANCH=''; else export BRANCH=_${CI_COMMIT_BRANCH//\//_}  ;fi
+    - if [ -n $SNAPSHOT ];then export VERSION=${VERSION}${BRANCH} ;fi
+    - rpmbuild  --define "pkg_version $VERSION"   -bb cdcm.spec
   rules:
-    - if: '$BumpTag == null'
+    - if: '$BumpTag == null || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       changes:
         - cdcm_settings.json
         - src/**/*
@@ -187,13 +191,21 @@ test_install:
     - sleep 5
     - sudo yum -y erase tw-cdcm
   rules:
-    - if: '$RunFast==null && $CI_COMMIT_BRANCH=="master" && $BumpTag == null'
+    - if: '$RunFast==null && $BumpTag == null && $CI_COMMIT_BRANCH == "master"'
       changes:
         - cdcm_settings.json
         - src/**/*
         - build/cdcm.spec
         - build/tw-cdcm.service
         - .gitlab-ci.yml
+    - if: '$RunFast==null && $BumpTag == null && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      changes:
+        - cdcm_settings.json
+        - src/**/*
+        - build/cdcm.spec
+        - build/tw-cdcm.service
+        - .gitlab-ci.yml
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
     - exists:
         - build/RPMS/x86_64/*.rpm
   dependencies:
@@ -205,45 +217,27 @@ push_tag:
   script:
     - cd build
     - git remote set-url origin https://git_push_tag:${secret}@git.trustwave.com/engineering/credentialed_data_collection_module.git
+    - git config --global push.default simple
     - bump2version $BumpTag --verbose --config-file ./bumpversion.cfg
-    #    - if ["$BumpTag" != "snapshot"]; then git tag $(date +%b-%d-%y) -m 'Periodic Release '$(date +%b-%d-%y) ; fi;
-    - git push origin
+    - git status
     - git push origin --tags
   rules:
     - if: ' $BumpTag != null'
   tags:
     - cdcm
 
-#deploy_release:
-#  stage: deploy
-#  script:
-#    - cd build
-#    - export VERSION=$(cat version.txt | cut -d'-' -f 1 )
-#    - export RELEASE=$(cat version.txt | cut -d'-' -f 2 )
-#    - export DIST=$(rpm --eval '%{dist}'|cut -d'.' -f 2)
-#    - if [ $VERSION = $RELEASE ]; then export FNAME=tw-cdcm-$VERSION.$DIST.x86_64.rpm ; else export FNAME=tw-cdcm-$VERSION-$RELEASE.$DIST.x86_64.rpm ; fi
-#    - echo $FNAME
-#    - mvn deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION  -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/releases -Dpackaging=x86_64.rpm -Dfile=RPMS/x86_64/$FNAME
-#  rules:
-#    - if: '$BumpTag == null && $CI_COMMIT_BRANCH=="master"'
-#    - exists:
-#        - build/RPMS/x86_64/*.rpm
-#  tags:
-#    - cdcm
-#  dependencies:
-#    - build_rpms
-
 deploy:
   stage: deploy
   script:
     - cd build
-    - export VERSION=$(cat version.txt | cut -d'-' -f 1 )
-    - export SNAPSHOT=$(cat version.txt | cut -d'-' -f 2 )
-    - export RELEASE=$(cat version.txt | cut -d'-' -f 1 | cut -d'.' -f 4)
-    - if [ "$CI_COMMIT_BRANCH" = "master" ]; then  export BRANCH=''; else export BRANCH=$CI_COMMIT_BRANCH- ;fi
-    - if [ "$(echo $SNAPSHOT|cut -d'_' -f 1)" = "SNAPSHOT" ]; then export VERSION=$BRANCH$VERSION-SNAPSHOT; export REPO=snapshots ; else export REPO=releases ;fi
-    - echo deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/$REPO -Dpackaging=x86_64.rpm -Dfile=$(ls -d RPMS/x86_64/*)
-    - mvn deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/$REPO -Dpackaging=x86_64.rpm -Dfile=$(ls -d RPMS/x86_64/*)
+    - export VERSION=$(cat version.txt | cut -d'_' -f 1 )
+    - export VERSION_FULL=$(cat version.txt )
+    - export SNAPSHOT=$(cat version.txt | cut -d'_' -f 1 | cut -d'.' -f 4)
+    - if [ "$CI_COMMIT_BRANCH" = "master" ]; then  export BRANCH=''; else export BRANCH=${CI_COMMIT_BRANCH//\//_}_ ;fi
+    - export REPO=releases
+    - if [ -n $SNAPSHOT  ]; then export VERSION=$BRANCH$VERSION-SNAPSHOT ; export REPO=snapshots ;fi
+    - echo deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/$REPO -Dpackaging=.rpm -Dfile=$(ls -d RPMS/x86_64/*)
+    - mvn deploy:deploy-file -s /etc/maven/settings.xml  -DgroupId=com.trustwave -DartifactId=cdcm -Dversion=$VERSION -DgeneratePom=true -DrepositoryId=nexus -Durl=https://nexus01.trustwave.com/content/repositories/$REPO -Dpackaging=.rpm -Dfile=$(ls -d RPMS/x86_64/*)
   rules:
     - if: '$BumpTag == null '
     - exists:
