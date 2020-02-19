@@ -59,6 +59,9 @@ class MajorDomoClient
     # Frame 1: "MDPCxy" (six bytes, MDP/Client x.y)
     # Frame 2: Service name (printable string)
     request = ['', MDP::C_CLIENT, service].concat(request)
+    puts "############## SEND ##############"
+    p request
+
     @client.send_strings request
     nil
   end
@@ -79,6 +82,8 @@ class MajorDomoClient
           log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"reached timeout limit of " + @resp_timeout.to_s + " seconds when waiting for response. throwing"}
           #raise Timeout::Error
       end
+      puts "############## RECEIVE ##############"
+      p messages
       messages.shift # empty
 
       # header
