@@ -1,9 +1,12 @@
 %define _unpackaged_files_terminate_build 0
 %{!?pkg_version:%define pkg_version 1.0.0}
+%{!?release:%define release 1}
 Name:       tw-cdcm
 Version:    %{pkg_version}
-Release:    1%{?dist}
+Release:    %{release}
 License:    Various
+Vendor: Trustwave Inc.
+URL: https://www.trustwave.com/
 Summary:    Credentialed Data Collection Module
 BuildRequires: systemd
 Requires: systemd
@@ -12,7 +15,6 @@ Credentialed Data Collection Module
 
 %clean
 rm -rf %{buildroot}
-
 
 %install
 rm -rf %{buildroot}
@@ -69,22 +71,30 @@ set -e
 
 %{__mkdir} -p %{buildroot}%{_unitdir}
 %{__mkdir} -p %{buildroot}/%{_sbindir}
+%{__mkdir} -p %{buildroot}/%{_presetdir}
 %{__install} -m644 %{_specdir}/%{name}.service %{buildroot}/%{_unitdir}/%{name}.service
+%{__install} -m644 %{_specdir}/50-%{name}.preset %{buildroot}/%{_presetdir}/50-%{name}.preset
 ln -sf %{_sbindir}/service %{buildroot}/%{_sbindir}/rc%{name}
 
 
 %post
 /sbin/ldconfig
-
-systemctl daemon-reload
 %systemd_post %{name}.service
+%systemd_user_post %{name}.service
+systemctl daemon-reload >/dev/null 2>&1 || :
+systemctl start %{name}
 
 %preun
 %systemd_preun %{name}.service
+%systemd_user_preun %{name}.service
+systemctl stop %{name}
 
 %postun
 %systemd_postun %{name}.service
-
+systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ] ; then
+        systemctl restart  %{name}.service >/dev/null 2>&1 || :
+fi
 
 %files
 %defattr(-,root,root,-)
@@ -96,6 +106,7 @@ systemctl daemon-reload
 /var/cdcm
 /etc/cdcm
 %{_unitdir}/%{name}.service
+%{_presetdir}/50-%{name}.preset
 %{_sbindir}/rc%{name}
 
 %changelog
