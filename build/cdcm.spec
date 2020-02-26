@@ -1,18 +1,20 @@
 %define _unpackaged_files_terminate_build 0
-
-Name:       tw-cdcm
-Version:    1.0.0
-Release:    1%{?dist}
+%{!?pkg_version:%define pkg_version 1.0.0}
+%{!?release:%define release 1}
+Name:       cdcm
+Version:    %{pkg_version}
+Release:    %{release}
 License:    Various
+Vendor: Trustwave Inc.
+URL: https://www.trustwave.com/
 Summary:    Credentialed Data Collection Module
 BuildRequires: systemd
-
+Requires: systemd
 %description
 Credentialed Data Collection Module
 
 %clean
 rm -rf %{buildroot}
-
 
 %install
 rm -rf %{buildroot}
@@ -20,11 +22,11 @@ rm -rf %{buildroot}
 [ -d %{buildroot} ] && rm -rf %{buildroot}
 %define cdcm_lib /usr/share/cdcm/lib
 %define cdcm_conf /etc/cdcm/
-for dir in %{cdcm_lib} %{cdcm_lib}/plugins %{_bindir} %{cdcm_conf} /var/cdcm/log /var/cdcm/downloaded_files /usr/lib /tmp ;do
+for dir in %{cdcm_lib} %{cdcm_lib}/plugins %{_bindir} %{cdcm_conf} /var/log/cdcm /var/cdcm/downloaded_files /usr/lib /tmp ;do
     [ -d %{buildroot}$dir ] || mkdir -p %{buildroot}$dir 
 done
 executables="cdcm_broker \
-cdcm.sh \
+cdcm_supervisor \
 cdcm_worker"
 
 %define output_dir /opt/output/%{getenv:CI_COMMIT_BRANCH}/
@@ -67,43 +69,44 @@ fi
 done
 set -e
 
-%{__mkdir} -p %{buildroot}/tmp/
-cd %{buildroot}/tmp/
-tar -xvf %{_specdir}/../tars/libpe.tar
-cd  %{buildroot}/tmp/libpe
-make
-cp %{buildroot}/tmp/libpe/libpe.so %{buildroot}/usr/share/cdcm/lib/
-
 %{__mkdir} -p %{buildroot}%{_unitdir}
 %{__mkdir} -p %{buildroot}/%{_sbindir}
+%{__mkdir} -p %{buildroot}/%{_presetdir}
 %{__install} -m644 %{_specdir}/%{name}.service %{buildroot}/%{_unitdir}/%{name}.service
+%{__install} -m644 %{_specdir}/50-%{name}.preset %{buildroot}/%{_presetdir}/50-%{name}.preset
 ln -sf %{_sbindir}/service %{buildroot}/%{_sbindir}/rc%{name}
-%pre
-if [ -f /var/lib/systemd/migrated/%{name} ]; then
-%service_add_pre %{name}.service
-fi
+
+
 %post
 /sbin/ldconfig
-%service_add_post %{name}.service
+%systemd_post %{name}.service
+%systemd_user_post %{name}.service
+systemctl daemon-reload >/dev/null 2>&1 || :
+systemctl start %{name}
 
 %preun
-%service_del_preun %{name}.service
+%systemd_preun %{name}.service
+%systemd_user_preun %{name}.service
+systemctl stop %{name}
 
 %postun
-rm -rf /var/log/cdcm
-/sbin/ldconfig
-%service_del_postun %{name}.service
+%systemd_postun %{name}.service
+systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ] ; then
+        systemctl restart  %{name}.service >/dev/null 2>&1 || :
+fi
 
 %files
 %defattr(-,root,root,-)
 %attr(755, root, root) %{_bindir}/cdcm_broker
+%attr(755, root, root) %{_bindir}/cdcm_supervisor
 %attr(755, root, root) %{_bindir}/cdcm_worker
-%attr(755, root, root) %{_bindir}/cdcm.sh
 %{cdcm_lib}/*.so*
 %{cdcm_lib}/plugins/*
 /var/cdcm
 /etc/cdcm
 %{_unitdir}/%{name}.service
+%{_presetdir}/50-%{name}.preset
 %{_sbindir}/rc%{name}
 
 %changelog
