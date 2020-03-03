@@ -132,7 +132,7 @@ class MajorDomoClient
         return
     end
     start_session_str = Message_Formater.instance.start_session_str(session)
-    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str.gsub(/\"password\"(\s*?):(\s*?)\"(.*?)\"/,"\"password\":\"xxx\"")}
     session.session_items[0].req_msg = start_session_str
     send("echo", start_session_str)
 
