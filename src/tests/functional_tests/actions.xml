@@ -63,8 +63,8 @@
             <session_item  action="get_file_info" param="ADMIN$/winhlp32.exe" verification_method="regex_match" regex="^(.*)path(.*)size(.*)$" />
             <session_item  action="get_file_info" param="C$/WINDOWS/hh.exe" verification_method="regex_match" regex="^(.*)path(.*)size(.*)$" />
             <session_item  action="read_file" path="ADMIN$/hh.exe" size="104" offset="100" verification_method="do_not_verify" />
-            <session_item  action="list_dir" param="C$" pattern="" verification_method="regex_match" regex="^(.*)name(.*)\n(.*)type(.*)$" />
-            <session_item  action="list_dir" param="C$/Users" pattern="" verification_method="regex_match" regex="^(.*)name(.*)\n(.*)type(.*)$" />
+            <session_item  action="list_dir" param="C$" pattern="" verification_method="regex_match" regex="^(.*)name(.*)type(.*)$" />
+            <session_item  action="list_dir" param="C$/Users" pattern="" verification_method="regex_match" regex="^(.*)name(.*)type(.*)$" />
             <session_item  action="close_session" verification_method="substr_exist" substr="session closed" />
         </test_set>
 
@@ -193,8 +193,8 @@
 
 
 
-        <session session_name="registry_tests_with_existing_values_asset2" test_set_name="registry_tests_with_existing_values" asset_name="asset1"  description="registry_tests_with_existing_values" />
-        <session session_name="smb_tests_with_existing_values_asset1" test_set_name="smb_tests_with_existing_values" asset_name="asset1"  description="smb_tests_with_existing_values" />
+        <!--<session session_name="registry_tests_with_existing_values_asset2" test_set_name="registry_tests_with_existing_values" asset_name="asset1"  description="registry_tests_with_existing_values" />-->
+        <!--<session session_name="smb_tests_with_existing_values_asset1" test_set_name="smb_tests_with_existing_values" asset_name="asset1"  description="smb_tests_with_existing_values" />-->
         <!--<session session_name="wmi_tests_with_existing_values_asset1" test_set_name="wmi_tests_with_existing_values" asset_name="asset1"  description="   registry_tests_with_existing_values" />-->
         <!--<session session_name="wmi_reg" test_set_name="wmi_reg_tests_with_existing_values" asset_name="asset1"  description="registry_tests_with_existing_values" />-->-->
 
