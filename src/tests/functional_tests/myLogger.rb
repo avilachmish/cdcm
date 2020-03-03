@@ -5,9 +5,8 @@ require 'fileutils'
 class MyLogger
     include Singleton
     def initialize
-        response = FileUtils.mkdir_p('/var/log/cdcm/testsRunner')
-
-        #log_file = File.open('cdcm_client.log', File::WRONLY |  File::CREAT | File::APPEND )
+        response = FileUtils.mkdir_p('/var/log/cdcm/testsRunner/')
+        
         log_file = File.open("/var/log/cdcm/testsRunner/cdcm_client#{$client_id}.log", File::WRONLY | File::CREAT | File::TRUNC)
         log_file.sync = true
         @logger = Logger.new( log_file )
