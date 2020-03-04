@@ -1,7 +1,7 @@
 %define _unpackaged_files_terminate_build 0
 %{!?pkg_version:%define pkg_version 1.0.0}
 %{!?release:%define release 1}
-Name:       tw-cdcm
+Name:       cdcm
 Version:    %{pkg_version}
 Release:    %{release}
 License:    Various
@@ -22,11 +22,11 @@ rm -rf %{buildroot}
 [ -d %{buildroot} ] && rm -rf %{buildroot}
 %define cdcm_lib /usr/share/cdcm/lib
 %define cdcm_conf /etc/cdcm/
-for dir in %{cdcm_lib} %{cdcm_lib}/plugins %{_bindir} %{cdcm_conf} /var/cdcm/log /var/cdcm/downloaded_files /usr/lib /tmp ;do
+for dir in %{cdcm_lib} %{cdcm_lib}/plugins %{_bindir} %{cdcm_conf} /var/log/cdcm /var/cdcm/downloaded_files /usr/lib /tmp ;do
     [ -d %{buildroot}$dir ] || mkdir -p %{buildroot}$dir 
 done
 executables="cdcm_broker \
-cdcm.sh \
+cdcm_supervisor \
 cdcm_worker"
 
 %define output_dir /opt/output/%{getenv:CI_COMMIT_BRANCH}/
@@ -99,8 +99,8 @@ fi
 %files
 %defattr(-,root,root,-)
 %attr(755, root, root) %{_bindir}/cdcm_broker
+%attr(755, root, root) %{_bindir}/cdcm_supervisor
 %attr(755, root, root) %{_bindir}/cdcm_worker
-%attr(755, root, root) %{_bindir}/cdcm.sh
 %{cdcm_lib}/*.so*
 %{cdcm_lib}/plugins/*
 /var/cdcm
