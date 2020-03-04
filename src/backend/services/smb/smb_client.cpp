@@ -78,7 +78,7 @@ namespace {
     {
         auto sess = trustwave::authenticated_scan_server::instance()
                         .sessions->get_session_by<trustwave::shared_mem_sessions_cache::remote>(std::string(pServer));
-        //  AU_LOG_DEBUG("server is %s ", pServer);
+        AU_LOG_DEBUG("server is %s ", pServer);
         static int krb5_set = 1;
         const char* wg = "WORKGROUP";
         if(!sess->id().is_nil()) {
@@ -109,28 +109,31 @@ namespace {
     {
         SMBCCTX* ctx;
 
-        if((ctx = smbc_new_context()) == NULL) return NULL;
+        if((ctx = smbc_new_context()) == nullptr) return nullptr;
 
-        smbc_setDebug(ctx, 1);
-
-        if(smbc_init_context(ctx) == NULL) {
+        //smbc_setDebug(ctx, 100);
+        smbc_setFunctionAuthData(ctx, smbc_auth_fn);
+        if(smbc_init_context(ctx) == nullptr) {
             smbc_free_context(ctx, 1);
-            return NULL;
+            return nullptr;
         }
 
         return ctx;
     }
     void delete_smbctx(SMBCCTX* ctx)
     {
-        smbc_getFunctionPurgeCachedServers(ctx)(ctx);
         smbc_free_context(ctx, 0);
     }
 
 } // namespace
-smb_client::smb_client() { this->init_conf(authenticated_scan_server::instance().service_conf_reppsitory); }
+smb_client::smb_client(): ctx_(nullptr)
+{
+    this->init_conf(authenticated_scan_server::instance().service_conf_reppsitory);
+}
 smb_client::~smb_client()
 {
     smbc_close(remote_fd_);
+    smbc_set_context(old_);
     delete_smbctx(ctx_);
     remote_fd_ = -1;
     close(local_fd_);
@@ -140,11 +143,14 @@ smb_client::~smb_client()
 std::pair<bool, int> smb_client::open_file(const char* path)
 {
     AU_LOG_DEBUG("path: %s", path);
-    if(smbc_init(smbc_auth_fn, 1) < 0) {
+    if(smbc_init(smbc_auth_fn, 0) < 0) {
         AU_LOG_ERROR("Unable to initialize libsmbclient");
         return std::make_pair(false, -1);
     }
     ctx_ = create_smbctx();
+    old_ = smbc_set_context(ctx_);
+    // smbc_setConfiguration(ctx_, smbc_getConfiguration(old_));
+
     remote_fd_ = smbc_open(path, O_RDONLY, 0755);
     current_open_path_ = path;
     if(remote_fd_ <= 0) {
@@ -208,31 +214,39 @@ bool smb_client::download_portion_to_memory(const char* base, const char* name, 
 bool smb_client::list_dir(const std::string& path, std::vector<trustwave::dirent>& dirents)
 {
     int dh1, dsize, dirc;
-    char dirbuf[SMB_DEFAULT_BLOCKSIZE];
     char* dirp;
-    if(smbc_init(smbc_auth_fn, 1) < 0) {
+    if(smbc_init(smbc_auth_fn, 100) < 0) {
         AU_LOG_ERROR("Unable to initialize libsmbclient");
         return false;
     }
     ctx_ = create_smbctx();
+    old_ = smbc_set_context(ctx_);
     if((dh1 = smbc_opendir(path.c_str())) < 1) {
         AU_LOG_ERROR("Could not open directory: %s: %s\n", path.c_str(), strerror(errno));
-
         return false;
     }
-    dirp = (char*)dirbuf;
-    if((dirc = smbc_getdents(static_cast<unsigned int>(dh1), (struct smbc_dirent*)dirp, sizeof(dirbuf))) < 0) {
-        AU_LOG_ERROR("Problems getting directory entries: %s\n", strerror(errno));
-        return false;
-    }
-    while(dirc > 0) {
-        dsize = ((struct smbc_dirent*)dirp)->dirlen;
-        if(((struct smbc_dirent*)dirp)->smbc_type == 7 || ((struct smbc_dirent*)dirp)->smbc_type == 8) {
-            dirents.push_back({std::string(((struct smbc_dirent*)dirp)->name),
-                               ((struct smbc_dirent*)dirp)->smbc_type == 7 ? std::string("DIR") : std::string("FILE")});
+    std::vector<std::unique_ptr<char[]>> bufs;
+    bufs.emplace_back(std::make_unique<char[]>(SMB_DEFAULT_BLOCKSIZE));
+    std::vector<char*>::size_type curr = 0;
+    dirp = (char*)bufs[curr].get();
+    while((dirc = smbc_getdents(static_cast<unsigned int>(dh1), (struct smbc_dirent*)dirp, SMB_DEFAULT_BLOCKSIZE))
+          != 0) {
+        if(dirc < 0) {
+            AU_LOG_ERROR("Problems getting directory entries: %s\n", strerror(errno));
+            return false;
         }
-        dirp += dsize;
-        dirc -= dsize;
+        while(dirc > 0) {
+            dsize = ((struct smbc_dirent*)dirp)->dirlen;
+            if(((struct smbc_dirent*)dirp)->smbc_type == 7 || ((struct smbc_dirent*)dirp)->smbc_type == 8) {
+                dirents.push_back(
+                    {std::string(((struct smbc_dirent*)dirp)->name),
+                     ((struct smbc_dirent*)dirp)->smbc_type == 7 ? std::string("DIR") : std::string("FILE")});
+            }
+            dirp += dsize;
+            dirc -= dsize;
+        }
+        bufs.emplace_back(std::make_unique<char[]>(SMB_DEFAULT_BLOCKSIZE));
+        dirp = bufs[++curr].get();
     }
     smbc_closedir(dh1);
     return true;
@@ -262,4 +276,10 @@ ssize_t smb_client::read(size_t offset, size_t size, char* dest)
 uintmax_t smb_client::file_size() const { return static_cast<uintmax_t>(remotestat_.st_size); }
 
 time_t smb_client::last_modified() const { return remotestat_.st_mtim.tv_sec; }
-bool smb_client::validate_open() { return open_file(current_open_path_.data()).first; }
+bool smb_client::validate_open()
+{
+    if(ctx_ && !current_open_path_.empty()) {
+        return true;
+    }
+    return open_file(current_open_path_.data()).first;
+}
