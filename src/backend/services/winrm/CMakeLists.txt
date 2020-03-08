@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.9.0)
 project(cdcm)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-include_directories(. /usr/local/include/openwsman)
-
+include_directories(. /usr/local/include/openwsman /usr/include/openwsman)
+#rotem: fix the include path for openwsman
 add_subdirectory(client)
 add_subdirectory(actions)
 

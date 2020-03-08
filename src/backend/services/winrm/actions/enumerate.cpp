@@ -18,6 +18,8 @@
 #include "session.hpp"
 #include "singleton_runner/authenticated_scan_server.hpp"
 #include "client/winrm_client.hpp"
+#include "xml2json/include/xml2json.hpp"
+
 using trustwave::Winrm_Enumerate_Action;
 auto push_back = [](tao::json::events::to_value& c, const std::string& k, const std::string& v) {
     c.begin_object();
@@ -42,8 +44,13 @@ int Winrm_Enumerate_Action::act(boost::shared_ptr<session> sess, std::shared_ptr
         std::vector<std::string> enumerate_res;
         cli.Enumerate(winrm_enumerate_action->uri_, filt, enumerate_res);
 
-        const tao::json::value v = enumerate_res;
-        res->res(to_string(v, 2));
+        std::vector<tao::json::value> enumerate_res_as_json_value;
+        for (size_t i=0; i < enumerate_res.size(); ++i)
+        {
+            enumerate_res_as_json_value.emplace_back(tao::json::from_string(xml2json(enumerate_res[i].c_str())));
+        }
+
+        res->res(enumerate_res_as_json_value);
     }
     catch(const winrm_client_exception& e) {
         res->res(e.what());
@@ -60,3 +67,4 @@ std::shared_ptr<trustwave::Action_Base> import_action()
 {
     return instance ? instance : (instance = std::make_shared<Winrm_Enumerate_Action>());
 }
+
