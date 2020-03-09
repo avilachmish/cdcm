@@ -29,6 +29,7 @@ SAMBA		:= samba-4.10.6
 LIBPE_PEV	:= libpe
 TAOCPP_JSON	:= taocpp-json
 OPENWSMAN   := openwsman
+XML2JSON    := xml2json
 
 default goal: help
 
@@ -77,7 +78,7 @@ deps: pre $(TOP)/deps/.done
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
-$(TOP)/deps/.done: $(TOP)/deps/$(TAOCPP_JSON)/.done $(TOP)/deps/$(LIBPE_PEV)/.done $(TOP)/deps/$(SAMBA)/.done $(TOP)/deps/$(OPENWSMAN)/.done
+$(TOP)/deps/.done: $(TOP)/deps/$(TAOCPP_JSON)/.done $(TOP)/deps/$(LIBPE_PEV)/.done $(TOP)/deps/$(SAMBA)/.done $(TOP)/deps/$(OPENWSMAN)/.done $(TOP)/deps/$(XML2JSON)/.done
 	@echo "* run $@ `date +%F.%H:%M:%S`"
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
@@ -124,6 +125,13 @@ $(TOP)/deps/$(SAMBA)/.done: $(TOP)/tars/$(SAMBA).tar
 
 	(cd $(TOP)/deps/$(SAMBA); make -j4)
 	touch $(TOP)/deps/$(SAMBA)/.done
+	@echo "* fin $@ `date +%F.%H:%M:%S`"
+
+$(TOP)/deps/$(XML2JSON)/.done: $(TOP)/tars/$(XML2JSON).tar
+	@echo "* run $@ `date +%F.%H:%M:%S`"
+	if [ -d $(TOP)/deps/ ];then rm -rf $(TOP)/deps/$(XML2JSON);fi
+	tar -xvf $(TOP)/tars/$(XML2JSON).tar -C $(TOP)/deps/
+	touch $(TOP)/deps/$(XML2JSON)/.done
 	@echo "* fin $@ `date +%F.%H:%M:%S`"
 
 pre:
