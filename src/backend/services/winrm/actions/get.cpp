@@ -18,6 +18,8 @@
 #include "session.hpp"
 #include "singleton_runner/authenticated_scan_server.hpp"
 #include "client/winrm_client.hpp"
+#include "xml2json/include/xml2json.hpp"
+
 using trustwave::Winrm_Get_Action;
 
 int Winrm_Get_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
@@ -32,7 +34,10 @@ int Winrm_Get_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<actio
                          sess->creds().password());
         auto winrm_get_action = std::dynamic_pointer_cast<winrm_action_get_msg>(action);
         std::vector<std::string> get_res;
-        res->res(cli.Get(winrm_get_action->uri_, std::addressof(winrm_get_action->selectors_)));
+
+        res->res( tao::json::from_string(xml2json(cli.Get(winrm_get_action->uri_, std::addressof(winrm_get_action->selectors_)).c_str())) );
+
+
     }
     catch(const winrm_client_exception& e) {
         res->res(e.what());
