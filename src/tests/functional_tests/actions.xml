@@ -127,11 +127,11 @@
         <test_set test_set_name="winrm_tests_with_existing_values" >
             <session_item  action="start_session" verification_method="regex_match" regex="^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$" />
             <session_item  action="winrm_identify" verification_method="boolean" expected="true"  />
-            <session_item  action="winrm_get" uri="http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service" selectors="[]" verification_method="do_not_verify" >
+            <session_item  action="winrm_get" uri="http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/Win32_Service" selectors="[]" verification_method="substr_exist" substr="Win32_Service" >
                 <selectors key="name" value="winmgmt"/>
                 <!--<selectors key="another_name" value="another_value"/>-->
              </session_item>
-            <session_item  action="winrm_enumerate" uri="http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*" filter="SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IpEnabled=TRUE" verification_method="do_not_verify" />
+            <session_item  action="winrm_enumerate" uri="http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*" filter="SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IpEnabled=TRUE" verification_method="substr_exist" substr="Win32_NetworkAdapterConfiguration" />
             <session_item  action="close_session" verification_method="substr_exist" substr="session closed" />
         </test_set>
 
