@@ -13,13 +13,13 @@
 #include "singleton_runner/authenticated_scan_server.hpp"
 
 
-using namespace trustwave;
-
+using trustwave::WMI_Reg_Enum_key_Action;
+using action_status = trustwave::Action_Base::action_status;
 /********************************************************
  *
  *  return value: -1 for error, 0 for success
  *********************************************************/
-int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
+action_status WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
 {
     AU_LOG_ERROR("rotem WMI_Reg_Enum_key_Action:"); //rotem to delete
 
@@ -28,14 +28,14 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
     if (!sess || (sess && sess->id().is_nil())){
         AU_LOG_ERROR("Session not found");
         res->res("Error: Session not found");
-        return -1;
+        return action_status::FAILED;
     }
 
     auto wmi_reg_enum_key_action = std::dynamic_pointer_cast<wmi_action_wmi_reg_enum_key_msg>(action);
     if (!wmi_reg_enum_key_action){
         AU_LOG_ERROR("Failed dynamic cast");
         res->res("Error: Internal error");
-        return -1;
+        return action_status::FAILED;
     }
     trustwave::wmi_client client;
 
@@ -47,7 +47,7 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
     {
         AU_LOG_ERROR("failed to connect to the asset");
         res->res(std::string("Error: Failed to connect to the asset"));
-        return -1;
+        return action_status::FAILED;
     }
 
     std::cout << "rotem hive: "  << wmi_reg_enum_key_action->hive << std::endl; //rotem to delete
@@ -58,13 +58,13 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
     {
         AU_LOG_ERROR("failed to get wmi registry response");
         res->res(std::string(std::get<1>(query_result)));
-        return -1;
+        return action_status::FAILED;
     }
 
     std::string wmi_reg_response = std::get<1>(query_result);
 
     res->res(wmi_reg_response);
-    return 0;
+    return action_status::SUCCEEDED;
 }
 
 
@@ -72,6 +72,6 @@ int WMI_Reg_Enum_key_Action::act(boost::shared_ptr<session> sess, std::shared_pt
 static std::shared_ptr<WMI_Reg_Enum_key_Action> instance = nullptr;
 
 // extern function, that declared in "action.hpp", for export the plugin from dll
-std::shared_ptr<Action_Base> import_action() {
-    return instance ? instance : (instance = std::make_shared<WMI_Reg_Enum_key_Action>());
+std::shared_ptr<trustwave::Action_Base> import_action() {
+    return instance ? instance : (instance = std::make_shared<trustwave::WMI_Reg_Enum_key_Action>());
 }

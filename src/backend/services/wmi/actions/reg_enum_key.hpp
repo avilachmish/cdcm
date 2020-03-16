@@ -72,7 +72,7 @@ namespace trustwave {
     public:
         WMI_Reg_Enum_key_Action() : Action_Base(wmi_action_wmi_reg_enum_key_msg::act_name){}
 
-        int act(boost::shared_ptr <session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res) override;
+        action_status act(boost::shared_ptr <session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res) override;
         [[nodiscard]] std::shared_ptr<action_msg> get_message(const tao::json::value& v) const override
         {
             return v.as<std::shared_ptr<wmi_action_wmi_reg_enum_key_msg>>();
