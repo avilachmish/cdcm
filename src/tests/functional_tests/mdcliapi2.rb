@@ -132,7 +132,7 @@ class MajorDomoClient
         return
     end
     start_session_str = Message_Formater.instance.start_session_str(session)
-    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str.gsub(/\"password\"(\s*?):(\s*?)\"(.*?)\"/,"\"password\":\"xxx\"")}
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"sending: \n" + start_session_str}
     session.session_items[0].req_msg = start_session_str
     send("echo", start_session_str)
 
@@ -162,12 +162,12 @@ class MajorDomoClient
     session_item.req_msg = action_str
     send("echo", action_str)
 
-    #measure response time 
+    #measure response time
     sent_done_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
     reply = recv()
     reply_received_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"response time: " + (reply_received_time - sent_done_time).to_s + " seconds" } 
+    log.info ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"response time: " + (reply_received_time - sent_done_time).to_s + " seconds" }
 
     if (reply[0].nil? || reply[0].empty? )
         log.error ("#{File.basename(__FILE__)}::#{__LINE__} #{self.class.name}::#{__callee__}") {"recieved empty response"}
