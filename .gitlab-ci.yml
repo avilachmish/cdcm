@@ -86,10 +86,8 @@ test:
     - cd build_cdcm/
     - scl enable devtoolset-8 "make install"
     - cd src/tests/
-    - pkill -9 cdcm
-    - LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/output/${CI_COMMIT_BRANCH}/libs nohup cdcm_broker
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/output/libs/:/opt/output/libs/plugins/:$GIT_CLONE_PATH/deps/samba-4.10.6/bin/shared/private/:$GIT_CLONE_PATH/deps/samba-4.10.6/bin/shared
     - ./tests_run  --log_sink=$REPORT_FNAME  --log_format=JUNIT  --log_level=all
-    - pkill -9 cdcm
     - cd ../..
     - make uninstall
   rules:
@@ -103,6 +101,7 @@ test:
     when: always
     paths:
       - build_cdcm/src/tests/*.xml
+      - build_cdcm/src/tests/log/cdcm_client.log
     reports:
       junit: build_cdcm/src/tests/*.xml
   tags:
@@ -244,14 +243,3 @@ deploy:
   dependencies:
     - build_rpms
 
-mirror:
-    stage: deploy
-    script:
-        - git remote show writable || git remote add writable git@git.trustwave.com:ascohen/cdcm_cloned.git
-        - git checkout master || git checkout -b master
-        - git pull -X theirs --depth=1  git@git.trustwave.com:engineering/credentialed_data_collection_module.git master
-        - git push writable master
-    only:
-        - master
-    tags:
-        - cdcm
