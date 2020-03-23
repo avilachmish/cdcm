@@ -16,8 +16,8 @@
 #include "../../../../common/singleton_runner/authenticated_scan_server.hpp"
 
 
-using namespace trustwave;
-
+using trustwave::WMI_WQL_Action;
+using action_status = trustwave::Action_Base::action_status;
 tao::json::value wql_resp_to_json_value(std::string work_str) {
 
     boost::char_separator<char> end_of_line_delim("\n");
@@ -92,19 +92,19 @@ tao::json::value wql_resp_to_json_value(std::string work_str) {
  *
  *  return value: -1 for error, 0 for success
  *********************************************************/
-int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
+action_status WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action, std::shared_ptr<result_msg> res)
 {
     if (!sess || (sess && sess->id().is_nil())){
         AU_LOG_ERROR("Session not found");
         res->res("Error: Session not found");
-        return -1;
+        return action_status::FAILED;
     }
 
     auto wmi_wql_action = std::dynamic_pointer_cast<wmi_action_wql_query_msg>(action);
     if (!wmi_wql_action){
         AU_LOG_ERROR("Failed dynamic cast");
         res->res("Error: Internal error");
-        return -1;
+        return action_status::FAILED;
     }
 
     trustwave::wmi_client client;
@@ -115,7 +115,7 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
     {
         AU_LOG_ERROR("failed to connect to the asset");
         res->res(std::string("Error: Failed to connect to the asset"));
-        return -1;
+        return action_status::FAILED;
     }
 
     auto query_result = client.query_remote_asset(wmi_wql_action->wql);
@@ -123,13 +123,13 @@ int WMI_WQL_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_
     {
         AU_LOG_ERROR("failed to get wql response");
         res->res(std::string(std::get<1>(query_result)));
-        return -1;
+        return action_status::FAILED;
     }
 
     std::string wql_raw_response = std::get<1>(query_result);
     auto wql_resp_json_value = wql_resp_to_json_value(wql_raw_response);
     res->res(wql_resp_json_value);
-    return 0;
+    return action_status::SUCCEEDED;
 }
 
 
