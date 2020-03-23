@@ -19,13 +19,13 @@
 #include "singleton_runner/authenticated_scan_server.hpp"
 #include "client/winrm_client.hpp"
 using trustwave::Winrm_Identify_Action;
-
-int Winrm_Identify_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
+using action_status = trustwave::Action_Base::action_status;
+action_status Winrm_Identify_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
                                 std::shared_ptr<result_msg> res)
 {
     if(!sess || (sess && sess->id().is_nil())) {
         res->res("Error: Session not found");
-        return -1;
+        return action_status::FAILED;
     }
     try {
         winrm_client cli(sess->remote(), 5985, "/wsman", "http", "Basic", sess->creds().username(),
@@ -34,10 +34,10 @@ int Winrm_Identify_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<
     }
     catch(const winrm_client_exception& e) {
         res->res(e.what());
-        return -1;
+        return action_status::FAILED;
     }
 
-    return 0;
+    return action_status::SUCCEEDED;
 }
 
 // instance of the our plugin

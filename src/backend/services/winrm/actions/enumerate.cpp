@@ -21,6 +21,7 @@
 #include "xml2json/include/xml2json.hpp"
 
 using trustwave::Winrm_Enumerate_Action;
+using action_status = trustwave::Action_Base::action_status;
 auto push_back = [](tao::json::events::to_value& c, const std::string& k, const std::string& v) {
     c.begin_object();
     c.key(k);
@@ -29,12 +30,12 @@ auto push_back = [](tao::json::events::to_value& c, const std::string& k, const 
     c.end_object();
     c.element();
 };
-int Winrm_Enumerate_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
+action_status Winrm_Enumerate_Action::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
                                 std::shared_ptr<result_msg> res)
 {
     if(!sess || (sess && sess->id().is_nil())) {
         res->res("Error: Session not found");
-        return -1;
+        return action_status::FAILED;
     }
     try {
         winrm_client cli(sess->remote(), 5985, "/wsman", "http", "Basic", sess->creds().username(),
@@ -54,9 +55,9 @@ int Winrm_Enumerate_Action::act(boost::shared_ptr<session> sess, std::shared_ptr
     }
     catch(const winrm_client_exception& e) {
         res->res(e.what());
-        return -1;
+        return action_status::FAILED;
     }
-    return 0;
+    return action_status::SUCCEEDED;
 }
 
 // instance of the our plugin
