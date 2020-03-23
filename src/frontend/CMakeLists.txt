@@ -4,7 +4,7 @@ project(cdcm)
 set(SOURCE_FILES
         cdcm_broker.cpp
         message_broker.cpp
-        workers_monitor.cpp
+        ../supervisor/workers_monitor.cpp
         maintenance.cpp)
 add_executable(cdcm_broker ${SOURCE_FILES})
 add_subdirectory(actions)
