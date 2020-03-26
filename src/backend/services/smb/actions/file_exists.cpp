@@ -30,8 +30,6 @@ using action_status = trustwave::Action_Base::action_status;
 action_status SMB_File_Exists::act(boost::shared_ptr<session> sess, std::shared_ptr<action_msg> action,
                                    std::shared_ptr<result_msg> res)
 {
-
-    //fixme assaf remove me
     if(!sess || (sess && sess->id().is_nil())) {
         res->res("Error: Session not found");
         return action_status::FAILED;
@@ -43,7 +41,7 @@ action_status SMB_File_Exists::act(boost::shared_ptr<session> sess, std::shared_
     trustwave::smb_client rc;
     auto connect_res = rc.open_file(base.c_str());
     if(!connect_res.first) {
-        AU_LOG_ERROR("got smb error: %i - %s", connect_res.second, std::strerror(connect_res.second));
+        AU_LOG_DEBUG("got smb error: %i - %s", connect_res.second, std::strerror(connect_res.second));
 
         if(connect_res.second == ENODEV || connect_res.second == ENOTDIR || connect_res.second == ENOENT) {
             res->res(std::string("False"));
