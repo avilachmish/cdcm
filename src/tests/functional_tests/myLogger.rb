@@ -17,9 +17,7 @@ class MyLogger
         @logger = Logger.new( log_file )
         @logger.datetime_format = '%d-%m-%Y %H:%M:%S::%3N'
         @logger.formatter = proc do |severity, datetime, progname, msg|
-           "[#{severity}] [#{datetime.strftime(@logger.datetime_format)}] [#{progname}]: #{msg}\n"
-
-        end
+        "[#{severity}] [#{datetime.strftime(@logger.datetime_format)}] [#{progname}]: #{msg}\n"
     end
 
     def log
