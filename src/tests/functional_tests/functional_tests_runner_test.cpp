@@ -70,7 +70,6 @@ BOOST_AUTO_TEST_CASE(standard)
     const int subs[] = {1};
 
     for(auto line: cont) {
-        BOOST_TEST_MESSAGE(line);
         if(boost::starts_with(line, "result")) {
             enum {
                 result = 1,
@@ -81,7 +80,6 @@ BOOST_AUTO_TEST_CASE(standard)
                 reason
 
             };
-            BOOST_TEST_MESSAGE("match");
             boost::regex_token_iterator<std::string::iterator> it(line.begin(), line.end(), re, subs);
             boost::regex_token_iterator<std::string::iterator> end;
             boost::smatch what;
