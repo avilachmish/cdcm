@@ -6,7 +6,11 @@ require 'json'
 class MyLogger
     include Singleton
     def initialize
-        settings_file = File.open Dir.pwd+"/testsRunner_settings.json"
+        if Dir.pwd.end_with?"functional_tests"
+            settings_file = File.open Dir.pwd+"/testsRunner_settings.json"
+        else
+            settings_file = File.open Dir.pwd+"/functional_tests/testsRunner_settings.json"
+        end
    	    settings_data = JSON.load settings_file
 	    settings_file.close
 	    logs_dir = settings_data["logger"]["logs_dir"].to_s
